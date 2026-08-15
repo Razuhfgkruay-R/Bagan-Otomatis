@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="id" class="dark h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Classmeet Tournament System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ipm: {
+              yellow: '#FFD700',
+              hover: '#E6C200',
+              dark: '#B39700',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .dark .liquid-glass {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .light .liquid-glass {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .dark .liquid-glass-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .light .liquid-glass-card {
+      background: rgba(248, 250, 252, 0.95);
+      border: 1px solid rgba(226, 232, 240, 0.95);
+    }
+
+    #wheelCanvas {
+      will-change: transform;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    #bracketViewWrapper {
+      position: relative;
+    }
+  </style>
+</head>
+<body class="min-h-screen md:h-full flex flex-col justify-between overflow-y-auto md:overflow-hidden selection:bg-[#FFD700] selection:text-slate-950 relative transition-colors duration-300 dark:bg-[#060911] dark:text-slate-100 bg-slate-100 text-slate-800">
+
+  <div class="fixed top-[-10%] left-[-10%] w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-[#FFD700]/15 rounded-full blur-[110px] pointer-events-none z-0"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[350px] md:w-[450px] h-[350px] md:h-[450px] bg-amber-500/10 rounded-full blur-[110px] pointer-events-none z-0"></div>
+
+  <button id="exitFullViewBtn" onclick="toggleFullView()" class="fixed top-3 right-3 z-50 hidden px-3.5 py-1.5 dark:bg-slate-900/90 light:bg-white/90 text-slate-200 dark:text-slate-200 light:text-slate-800 border border-[#FFD700]/40 text-xs font-bold rounded-xl backdrop-blur-md transition shadow-2xl flex items-center gap-2 opacity-80 hover:opacity-100">
+    <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    <span>Exit Full View (ESC)</span>
+  </button>
+
+  <header id="mainHeader" class="border-b dark:border-white/10 border-slate-200 dark:bg-slate-950/70 bg-white/80 backdrop-blur-md px-3 md:px-6 py-2 flex flex-wrap items-center justify-between gap-2 md:gap-4 shrink-0 z-30 transition-all duration-300">
+    <div class="flex items-center gap-2.5">
+      <div class="px-2 py-0.5 md:px-2.5 md:py-1 bg-[#FFD700] text-slate-950 rounded-lg font-black text-sm md:text-base shadow border border-amber-300">
+        IPM
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <h1 id="appTitleText" class="font-extrabold text-xs md:text-base tracking-tight leading-tight dark:text-white text-slate-900">
+            Tournament System
+          </h1>
+          <button onclick="editAppTitle()" title="Ganti Nama Kegiatan" class="text-amber-500 hover:text-[#FFD700] transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+          </button>
+        </div>
+        <p class="text-[10px] md:text-[11px] dark:text-slate-400 text-slate-500">Welcome And Let it Spin</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 md:gap-2.5 flex-wrap">
+      <button onclick="toggleTheme()" id="themeToggleBtn" title="Ubah Mode Tampilan" class="relative p-1 rounded-xl border transition-all duration-300 flex items-center gap-1 dark:bg-slate-900 dark:border-[#FFD700]/30 bg-slate-200 border-amber-400/50 shadow-inner">
+        <div id="sunIcon" class="p-1 md:p-1.5 rounded-lg transition-all duration-300 text-amber-500">
+          <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+          </svg>
+        </div>
+        <div id="moonIcon" class="p-1 md:p-1.5 rounded-lg transition-all duration-300 text-slate-400">
+          <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+          </svg>
+        </div>
+      </button>
+
+      <button onclick="toggleFullView()" class="px-2.5 py-1.5 md:px-3 bg-[#FFD700]/15 hover:bg-[#FFD700]/25 text-amber-600 dark:text-amber-300 border border-[#FFD700]/40 text-[11px] md:text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-sm">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+        <span>Full View</span>
+      </button>
+
+      <button onclick="openModal()" class="px-2.5 py-1.5 md:px-3 bg-[#FFD700] hover:bg-amber-400 text-slate-950 text-[11px] md:text-xs font-black rounded-lg transition flex items-center gap-1 shadow-md">
+        <svg class="w-3.5 h-3.5 text-slate-950" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        <span>Edit Tim</span>
+      </button>
+
+      <button onclick="resetCurrentTourney()" class="px-2.5 py-1.5 md:px-3 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-300 border border-rose-400/30 text-[11px] md:text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-sm">
+        <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span>Reset</span>
+      </button>
+    </div>
+  </header>
+
+  <div id="tabsBar" class="border-b dark:border-white/10 border-slate-200 dark:bg-slate-950/80 bg-slate-200/60 backdrop-blur-md px-3 md:px-6 py-1.5 flex items-center justify-between gap-3 shrink-0 z-20 overflow-x-auto no-scrollbar transition-all duration-300">
+    <div id="tabsContainer" class="flex items-center gap-2 overflow-x-auto no-scrollbar"></div>
+    <button onclick="openAddTourneyModal()" class="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 shadow-sm">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      <span>Tambah Lomba</span>
+    </button>
+  </div>
+
+  <main class="flex-1 p-2 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 overflow-y-auto md:overflow-hidden h-auto md:h-full z-10">
+    
+    <section id="bracketPanel" class="order-1 md:order-2 flex-1 liquid-glass rounded-2xl p-2.5 md:p-3 flex flex-col justify-between min-h-[520px] md:min-h-0 h-auto md:h-full overflow-hidden">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b dark:border-white/10 border-slate-200 pb-2 shrink-0">
+        <div class="flex items-center gap-2 md:gap-3 text-xs">
+          <h2 class="font-extrabold text-xs tracking-wider uppercase dark:text-amber-300 text-amber-700 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-[#FFD700]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <span id="activeBracketTitle">Bagan Pertandingan Turnamen</span>
+          </h2>
+          <span class="dark:text-slate-600 text-slate-300">|</span>
+          <span class="dark:text-slate-400 text-slate-500">Total: <strong id="totalTeamsCount" class="dark:text-white text-slate-900">0</strong> Tim</span>
+        </div>
+        <div class="text-[10px] md:text-[11px] dark:text-slate-400 text-slate-500 flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span class="truncate">Klik nama tim yang menang untuk meloloskannya.</span>
+        </div>
+      </div>
+
+      <div id="bracketViewWrapper" class="flex-1 w-full h-full overflow-x-auto overflow-y-hidden no-scrollbar">
+        <svg id="bracketSvgOverlay" class="absolute inset-0 w-full h-full pointer-events-none z-0" style="min-width: 900px;"></svg>
+        <div id="bracketView" class="relative z-10 flex gap-4 md:gap-6 items-center justify-between py-2 min-w-[900px] h-full no-scrollbar"></div>
+      </div>
+    </section>
+
+    <section id="wheelPanel" class="order-2 md:order-1 w-full md:w-72 xl:w-80 liquid-glass rounded-2xl p-4 flex flex-col justify-between shrink-0 h-auto md:h-full transition-all duration-300">
+      <div class="flex items-center justify-between border-b dark:border-white/10 border-slate-200 pb-2">
+        <h2 class="font-extrabold text-xs tracking-wider uppercase dark:text-amber-300 text-amber-700 flex items-center gap-2">
+          <svg class="w-4 h-4 text-[#FFD700]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          <span>Roda Pengundian</span>
+        </h2>
+        <span id="remainingBadge" class="text-[10px] bg-[#FFD700]/20 text-amber-700 dark:text-amber-300 border border-[#FFD700]/40 px-2 py-0.5 rounded-full font-bold">
+          Sisa: 0
+        </span>
+      </div>
+
+      <div class="relative flex items-center justify-center my-auto py-3">
+        <svg class="absolute top-2 z-20 w-5 h-5 text-amber-500 filter drop-shadow" fill="currentColor" viewBox="0 0 24 24"><path d="M12 16L6 8h12l-6 8z"/></svg>
+        <canvas id="wheelCanvas" width="240" height="240" class="max-w-[220px] md:max-w-full h-auto drop-shadow-xl"></canvas>
+      </div>
+
+      <button id="spinBtn" onclick="spin()" class="w-full py-3 bg-[#FFD700] hover:bg-[#E6C200] text-slate-950 font-black text-xs rounded-xl border border-amber-300 shadow-lg active:scale-[0.98] transition disabled:opacity-40 disabled:cursor-not-allowed">
+        MULAI SPIN WHEEL
+      </button>
+
+      <div class="pt-2 border-t dark:border-white/10 border-slate-200 mt-2">
+        <p class="text-[10px] font-bold dark:text-slate-400 text-slate-500 mb-1.5 uppercase">Belum Di-Spin:</p>
+        <div id="remainingList" class="flex flex-wrap gap-1 max-h-20 overflow-y-auto text-[10px] pr-1"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="mainFooter" class="border-t dark:border-white/10 border-slate-200 dark:bg-slate-950/70 bg-white/80 backdrop-blur-md py-1.5 text-center text-[11px] dark:text-slate-500 text-slate-400 flex items-center justify-center gap-2 shrink-0 z-30 transition-all duration-300">
+    <span>Automatic Tournament Bracket System &copy; 2026</span>
+    <span>&bull;</span>
+    <span class="font-black tracking-widest dark:text-amber-400 text-amber-600">POWERED BY RAZUHFGKRUAY</span>
+  </footer>
+
+  <div id="editTitleModal" class="fixed inset-0 dark:bg-slate-950/80 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="liquid-glass w-full max-w-md rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
+      <h3 class="font-bold text-base dark:text-white text-slate-900">Ganti Nama Kegiatan</h3>
+      <input id="appTitleInput" type="text" class="w-full dark:bg-slate-950/80 bg-white border dark:border-white/10 border-slate-300 rounded-xl p-3 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[#FFD700]" />
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeEditTitleModal()" class="px-3 py-1.5 dark:bg-white/5 bg-slate-200 text-xs font-semibold rounded-lg">Batal</button>
+        <button onclick="saveAppTitle()" class="px-3 py-1.5 bg-[#FFD700] text-slate-950 text-xs font-bold rounded-lg">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addTourneyModal" class="fixed inset-0 dark:bg-slate-950/80 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="liquid-glass w-full max-w-md rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
+      <h3 class="font-bold text-base dark:text-white text-slate-900">Tambah Bagan Lomba Baru</h3>
+      <input id="tourneyNameInput" type="text" class="w-full dark:bg-slate-950/80 bg-white border dark:border-white/10 border-slate-300 rounded-xl p-3 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[#FFD700]" placeholder="Futsal, Basket, Voli..." />
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeAddTourneyModal()" class="px-3 py-1.5 dark:bg-white/5 bg-slate-200 text-xs font-semibold rounded-lg">Batal</button>
+        <button onclick="createNewTourney()" class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg">Buat Bagan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="inputModal" class="fixed inset-0 dark:bg-slate-950/80 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="liquid-glass w-full max-w-lg rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
+      <h3 class="font-bold text-base dark:text-white text-slate-900">Edit Daftar Tim Peserta</h3>
+      <p class="text-xs dark:text-slate-400 text-slate-500">Masukkan nama tim/kelas (satu per baris). Bagan akan menyesuaikan secara dinamis.</p>
+      
+      <div class="flex gap-2 mb-1">
+        <button onclick="loadPresets(19)" class="px-2.5 py-1 bg-[#FFD700]/20 hover:bg-[#FFD700]/30 text-amber-600 dark:text-amber-300 border border-[#FFD700]/40 rounded-lg text-xs font-bold transition flex items-center gap-1">
+          <span>+ Gunakan Template 19 Tim</span>
+        </button>
+        <button onclick="clearTeamsInput()" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 rounded-lg text-xs font-semibold transition">
+          Kosongkan
+        </button>
+      </div>
+
+      <textarea id="teamInput" rows="9" class="w-full dark:bg-slate-950/80 bg-white border dark:border-white/10 border-slate-300 rounded-xl p-3 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[#FFD700] font-mono" placeholder="Ketik nama tim di sini (satu tim per baris)&#10;Contoh:&#10;Tim A&#10;Tim B&#10;Tim C"></textarea>
+      
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal()" class="px-3 py-1.5 dark:bg-white/5 bg-slate-200 text-xs font-semibold rounded-lg">Batal</button>
+        <button onclick="saveTeams()" class="px-3 py-1.5 bg-[#FFD700] text-slate-950 text-xs font-bold rounded-lg shadow-md">Simpan & Update Bagan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="winnerModal" class="fixed inset-0 dark:bg-slate-950/85 bg-slate-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="liquid-glass w-full max-w-md rounded-2xl p-6 shadow-2xl text-center flex flex-col items-center gap-3 relative overflow-hidden">
+      <div class="w-10 h-10 rounded-full bg-[#FFD700]/20 border border-[#FFD700]/40 flex items-center justify-center text-amber-500">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      </div>
+      <p class="text-[10px] font-black tracking-widest text-amber-600 dark:text-amber-400 uppercase">Terpilih Masuk Bagan</p>
+      <h3 id="winnerName" class="text-2xl font-black dark:text-white text-slate-900">-</h3>
+      <p id="winnerSlotInfo" class="text-xs dark:text-slate-400 text-slate-500">Masuk ke Match</p>
+      <button onclick="closeWinnerModal()" class="w-full py-2.5 bg-[#FFD700] text-slate-950 font-bold text-xs rounded-xl shadow-lg border border-amber-300">Lanjutkan Spin</button>
+    </div>
+  </div>
+
+  <div id="championModal" class="fixed inset-0 dark:bg-slate-950/90 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="liquid-glass border-2 border-[#FFD700] w-full max-w-md rounded-2xl p-6 shadow-2xl text-center flex flex-col items-center gap-3 relative">
+      <div class="w-14 h-14 rounded-full bg-[#FFD700]/20 border border-[#FFD700]/50 flex items-center justify-center text-amber-500">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8m-4-4v4m-5-13V4a1 1 0 011-1h8a1 1 0 011 1v3m-10 0a4 4 0 004 4h2a4 4 0 004-4m-10 0H3a2 2 0 02-2 2v2a4 4 0 004 4h1m12-8h3a2 2 0 012 2v2a4 4 0 00-4 4h-1"/></svg>
+      </div>
+      <p class="text-[10px] font-black tracking-widest text-amber-500 uppercase">JUARA TURNAMEN</p>
+      <h3 id="championName" class="text-3xl font-black text-amber-500 dark:text-amber-300 drop-shadow-md">-</h3>
+      <p class="text-xs dark:text-slate-300 text-slate-600">Selamat atas kemenangannya!</p>
+      <button onclick="closeChampionModal()" class="w-full mt-1 py-2.5 bg-[#FFD700] text-slate-950 font-black text-xs rounded-xl">Tutup</button>
+    </div>
+  </div>
+
+  <script>
+    // PRESET 19 KELAS TEMPLATE
+    const preset19Teams = [
+      "10 1", "10 2", "10 3", "10 4", "10 5", "10 6",
+      "11 1", "11 2", "11 3", "11 4", "11 5", "11 6",
+      "12 1", "12 2", "12 3", "12 4", "12 5", "12 6",
+      "Guru / IPM"
+    ];
+
+    let appTitle = "Classmeet Tournament System";
+    let currentTheme = "dark";
+    let tournaments = [];
+    let activeTourneyId = null;
+    let isFullView = false;
+
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d', { alpha: true });
+    let startAngle = 0;
+    let isSpinning = false;
+    const colors = ["#FFD700", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#06b6d4", "#f97316", "#14b8a6", "#3b82f6", "#e11d48"];
+
+    window.onload = () => {
+      loadFromLocalStorage();
+      if (tournaments.length === 0) {
+        // AWAL MULAI: KOSONGKAN TIM
+        let defaultTourney = buildTourneyObject("Isi Nama Lomba", []);
+        tournaments.push(defaultTourney);
+        activeTourneyId = defaultTourney.id;
+        saveToLocalStorage();
+      }
+      applyTheme(currentTheme);
+      updateAppTitleUI();
+      renderTabs();
+      loadActiveTourney();
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === "Escape" && isFullView) toggleFullView();
+      });
+
+      window.addEventListener('resize', () => {
+        drawBracketConnectingLines();
+      });
+    };
+
+    function toggleTheme() {
+      currentTheme = (currentTheme === 'dark') ? 'light' : 'dark';
+      saveToLocalStorage();
+      applyTheme(currentTheme);
+      drawWheel();
+      drawBracketConnectingLines();
+    }
+
+    function applyTheme(theme) {
+      const html = document.documentElement;
+      const sunIcon = document.getElementById('sunIcon');
+      const moonIcon = document.getElementById('moonIcon');
+      if (theme === 'light') {
+        html.classList.remove('dark');
+        html.classList.add('light');
+        sunIcon.className = "p-1 md:p-1.5 rounded-lg bg-amber-400 text-slate-950 font-bold transition-all";
+        moonIcon.className = "p-1 md:p-1.5 rounded-lg text-slate-400 transition-all";
+      } else {
+        html.classList.remove('light');
+        html.classList.add('dark');
+        moonIcon.className = "p-1 md:p-1.5 rounded-lg bg-[#FFD700] text-slate-950 font-bold transition-all";
+        sunIcon.className = "p-1 md:p-1.5 rounded-lg text-slate-500 transition-all";
+      }
+    }
+
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem('classmeet_tournaments', JSON.stringify(tournaments));
+        localStorage.setItem('classmeet_active_id', activeTourneyId);
+        localStorage.setItem('classmeet_app_title', appTitle);
+        localStorage.setItem('classmeet_theme', currentTheme);
+      } catch (e) {}
+    }
+
+    function loadFromLocalStorage() {
+      try {
+        let saved = localStorage.getItem('classmeet_tournaments');
+        let savedId = localStorage.getItem('classmeet_active_id');
+        let savedTitle = localStorage.getItem('classmeet_app_title');
+        let savedTheme = localStorage.getItem('classmeet_theme');
+        if (saved) tournaments = JSON.parse(saved);
+        if (savedId) activeTourneyId = savedId;
+        if (savedTitle) appTitle = savedTitle;
+        if (savedTheme) currentTheme = savedTheme;
+      } catch (e) { tournaments = []; }
+    }
+
+    function editAppTitle() {
+      document.getElementById('appTitleInput').value = appTitle;
+      document.getElementById('editTitleModal').classList.remove('hidden');
+    }
+    function closeEditTitleModal() { document.getElementById('editTitleModal').classList.add('hidden'); }
+    function saveAppTitle() {
+      const val = document.getElementById('appTitleInput').value.trim();
+      if (val) { appTitle = val; saveToLocalStorage(); updateAppTitleUI(); }
+      closeEditTitleModal();
+    }
+    function updateAppTitleUI() {
+      document.getElementById('appTitleText').innerText = appTitle;
+      document.getElementById('pageTitle').innerText = appTitle;
+    }
+
+    function toggleFullView() {
+      isFullView = !isFullView;
+      const ids = ['mainHeader', 'tabsBar', 'wheelPanel', 'mainFooter'];
+      ids.forEach(id => document.getElementById(id).classList.toggle('hidden', isFullView));
+      document.getElementById('exitFullViewBtn').classList.toggle('hidden', !isFullView);
+      setTimeout(drawBracketConnectingLines, 100);
+    }
+
+    function getActiveTourney() {
+      return tournaments.find(t => t.id === activeTourneyId) || tournaments[0];
+    }
+
+    function buildTourneyObject(name, teamList) {
+      let cleanTeams = teamList.filter(t => t.trim() !== "");
+
+      return {
+        id: 'tourney_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        name: name,
+        teams: [...cleanTeams],
+        remainingTeams: [...cleanTeams],
+        spinAssignedTeams: [],
+        winners: {} // Object penampung pemenang match
+      };
+    }
+
+    function renderTabs() {
+      const container = document.getElementById('tabsContainer');
+      container.innerHTML = '';
+      tournaments.forEach(t => {
+        const isActive = (t.id === activeTourneyId);
+        const tab = document.createElement('div');
+        let activeStyle = isActive 
+          ? 'bg-[#FFD700] text-slate-950 border-amber-300 shadow-md font-extrabold' 
+          : 'dark:bg-white/5 bg-white hover:bg-slate-200 dark:hover:bg-white/10 dark:text-slate-300 text-slate-700 dark:border-white/10 border-slate-300 font-medium';
+
+        tab.className = `px-3 py-1 rounded-lg border text-xs flex items-center gap-2 transition cursor-pointer shrink-0 ${activeStyle}`;
+        tab.innerHTML = `
+          <span onclick="switchTab('${t.id}')">${t.name}</span>
+          ${tournaments.length > 1 ? `<button onclick="deleteTab(event, '${t.id}')" class="opacity-70 hover:opacity-100 font-bold ml-1 text-xs">&times;</button>` : ''}
+        `;
+        container.appendChild(tab);
+      });
+    }
+
+    function switchTab(id) {
+      if (isSpinning) return;
+      activeTourneyId = id;
+      saveToLocalStorage();
+      renderTabs();
+      loadActiveTourney();
+    }
+
+    function deleteTab(event, id) {
+      event.stopPropagation();
+      if (confirm("Hapus bagan lomba ini?")) {
+        tournaments = tournaments.filter(t => t.id !== id);
+        if (activeTourneyId === id) activeTourneyId = tournaments[0].id;
+        saveToLocalStorage();
+        renderTabs();
+        loadActiveTourney();
+      }
+    }
+
+    function openAddTourneyModal() {
+      document.getElementById('tourneyNameInput').value = '';
+      document.getElementById('addTourneyModal').classList.remove('hidden');
+    }
+    function closeAddTourneyModal() { document.getElementById('addTourneyModal').classList.add('hidden'); }
+
+    function createNewTourney() {
+      const nameInput = document.getElementById('tourneyNameInput').value.trim();
+      if (!nameInput) { alert("Masukkan nama lomba."); return; }
+
+      let newTourney = buildTourneyObject(nameInput, []);
+      tournaments.push(newTourney);
+      activeTourneyId = newTourney.id;
+
+      saveToLocalStorage();
+      closeAddTourneyModal();
+      renderTabs();
+      loadActiveTourney();
+    }
+
+    function loadActiveTourney() {
+      const t = getActiveTourney();
+      document.getElementById('activeBracketTitle').innerText = `Bagan Lomba: ${t.name}`;
+      document.getElementById('totalTeamsCount').innerText = t.teams ? t.teams.length : 0;
+      drawWheel();
+      renderUI();
+    }
+
+    function addTeamToBracket(teamName) {
+      const t = getActiveTourney();
+      if (!t.spinAssignedTeams) t.spinAssignedTeams = [];
+      t.spinAssignedTeams.push(teamName);
+      saveToLocalStorage();
+      return "Bagan Pertandingan";
+    }
+
+    function renderUI() {
+      const t = getActiveTourney();
+      const remLen = t.remainingTeams ? t.remainingTeams.length : 0;
+      document.getElementById('remainingBadge').innerText = `Sisa: ${remLen}`;
+      
+      const listEl = document.getElementById('remainingList');
+      listEl.innerHTML = '';
+      if (t.remainingTeams) {
+        t.remainingTeams.forEach(teamName => {
+          const chip = document.createElement('span');
+          chip.className = 'px-1.5 py-0.5 dark:bg-white/10 bg-slate-200 border dark:border-white/10 border-slate-300 rounded backdrop-blur-md shadow-sm';
+          chip.innerText = teamName;
+          listEl.appendChild(chip);
+        });
+      }
+
+      renderBracket();
+    }
+
+    // UTILITY: PENENTUAN PEMENANG MATCH
+    function setWinnerKey(matchId, winnerTeam) {
+      const t = getActiveTourney();
+      if (!t.winners) t.winners = {};
+      t.winners[matchId] = winnerTeam;
+
+      if (matchId === 'FINAL' && winnerTeam) {
+        document.getElementById('championName').innerText = winnerTeam;
+        document.getElementById('championModal').classList.remove('hidden');
+      }
+
+      saveToLocalStorage();
+      renderUI();
+    }
+
+    function getWinnerKey(matchId) {
+      const t = getActiveTourney();
+      return (t.winners && t.winners[matchId]) ? t.winners[matchId] : null;
+    }
+
+    // MAIN RENDER BRACKET ENGINE (UNIVERSAL & HYBRID)
+    function renderBracket() {
+      const container = document.getElementById('bracketView');
+      container.innerHTML = '';
+      const t = getActiveTourney();
+
+      if (!t.teams || t.teams.length === 0) {
+        // TAMPILAN KOSONG: PERINGATAN HARAP ISI TIM
+        container.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full w-full py-16 text-center mx-auto">
+            <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 mb-3">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h3 class="text-base md:text-lg font-black dark:text-white text-slate-800">Harap Isi Tim Yang Bertanding</h3>
+            <p class="text-xs dark:text-slate-400 text-slate-500 max-w-sm mt-1 mb-4">Daftar tim untuk lomba ini masih kosong. Silakan klik tombol "Edit Tim" di atas untuk memasukkan peserta.</p>
+            <button onclick="openModal()" class="px-4 py-2 bg-[#FFD700] hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg border border-amber-300 transition active:scale-95">
+              + Edit & Isi Tim Sekarang
+            </button>
+          </div>
+        `;
+        document.getElementById('bracketSvgOverlay').innerHTML = '';
+        return;
+      }
+
+      if (t.teams.length === 19) {
+        // APABILA Tepat 19 TIM: PAKAI STRUKTUR PRESISI 19 TIM (SESUAI GAMBAR MAS)
+        render19TeamBracket(container, t);
+      } else {
+        // UNTUK JUMLAH TIM LAINNYA (2, 4, 8, 10, 16, DLL): BAGAN DINAMIS UNIVERSAL
+        renderUniversalBracket(container, t);
+      }
+
+      setTimeout(drawBracketConnectingLines, 50);
+    }
+
+    // STRUKTUR KHUSUS 19 TIM (EXACT SKETSA MAS)
+    function render19TeamBracket(container, t) {
+      let assigned = t.spinAssignedTeams || [];
+
+      // Left Babak 1
+      let l1Matches = [];
+      for(let i=0; i<5; i++) {
+        l1Matches.push({ p1: assigned[i*2]||null, p2: assigned[i*2+1]||null });
+      }
+      let t11 = assigned[10] || null;
+
+      // Left Babak 2
+      let l2_0_p1 = getWinnerKey('L1-0'), l2_0_p2 = getWinnerKey('L1-1');
+      let l2_1_p1 = getWinnerKey('L1-2'), l2_1_p2 = getWinnerKey('L1-3');
+      let l2_2_p1 = getWinnerKey('L1-4'), l2_2_p2 = t11;
+
+      // Left Babak 3
+      let l3_0_p1 = getWinnerKey('L2-1'), l3_0_p2 = getWinnerKey('L2-2');
+
+      // Semi Kiri
+      let lSemi_p1 = getWinnerKey('L2-0'); // Cyan path
+      let lSemi_p2 = getWinnerKey('L3-0');
+
+      // Right Babak 1
+      let r1Matches = [];
+      for(let i=0; i<4; i++) {
+        r1Matches.push({ p1: assigned[11 + i*2]||null, p2: assigned[11 + i*2 + 1]||null });
+      }
+
+      // Right Babak 2
+      let r2_0_p1 = getWinnerKey('R1-0'), r2_0_p2 = getWinnerKey('R1-1');
+      let r2_1_p1 = getWinnerKey('R1-2'), r2_1_p2 = getWinnerKey('R1-3');
+
+      // Semi Kanan
+      let rSemi_p1 = getWinnerKey('R2-0');
+      let rSemi_p2 = getWinnerKey('R2-1');
+
+      // Final
+      let final_p1 = getWinnerKey('LSemi-0');
+      let final_p2 = getWinnerKey('RSemi-0');
+
+      // COLUMNS CREATION
+      const colL1 = createColumn('BABAK 1 (11 TIM)');
+      l1Matches.forEach((m, i) => colL1.group.appendChild(createMatchCard(`card-L1-${i}`, m.p1, m.p2, getWinnerKey(`L1-${i}`), (w) => setWinnerKey(`L1-${i}`, w))));
+      colL1.group.appendChild(createSingleCard('card-L1-T11', t11, 'Tim 11 (Menunggu B2)'));
+      container.appendChild(colL1.col);
+
+      const colL2 = createColumn('BABAK 2 (6 TIM)');
+      colL2.group.appendChild(createMatchCard('card-L2-0', l2_0_p1, l2_0_p2, getWinnerKey('L2-0'), (w) => setWinnerKey('L2-0', w)));
+      colL2.group.appendChild(createMatchCard('card-L2-1', l2_1_p1, l2_1_p2, getWinnerKey('L2-1'), (w) => setWinnerKey('L2-1', w)));
+      colL2.group.appendChild(createMatchCard('card-L2-2', l2_2_p1, l2_2_p2, getWinnerKey('L2-2'), (w) => setWinnerKey('L2-2', w)));
+      container.appendChild(colL2.col);
+
+      const colL3 = createColumn('BABAK 3');
+      colL3.group.appendChild(createMatchCard('card-L3-0', l3_0_p1, l3_0_p2, getWinnerKey('L3-0'), (w) => setWinnerKey('L3-0', w)));
+      container.appendChild(colL3.col);
+
+      const colLSemi = createColumn('SEMI KIRI');
+      colLSemi.group.appendChild(createMatchCard('card-LSemi-0', lSemi_p1, lSemi_p2, getWinnerKey('LSemi-0'), (w) => setWinnerKey('LSemi-0', w)));
+      container.appendChild(colLSemi.col);
+
+      const colFinal = createCenterFinalColumn(final_p1, final_p2, getWinnerKey('FINAL'));
+      container.appendChild(colFinal);
+
+      const colRSemi = createColumn('SEMI KANAN');
+      colRSemi.group.appendChild(createMatchCard('card-RSemi-0', rSemi_p1, rSemi_p2, getWinnerKey('RSemi-0'), (w) => setWinnerKey('RSemi-0', w)));
+      container.appendChild(colRSemi.col);
+
+      const colR2 = createColumn('BABAK 2 (4 TIM)');
+      colR2.group.appendChild(createMatchCard('card-R2-0', r2_0_p1, r2_0_p2, getWinnerKey('R2-0'), (w) => setWinnerKey('R2-0', w)));
+      colR2.group.appendChild(createMatchCard('card-R2-1', r2_1_p1, r2_1_p2, getWinnerKey('R2-1'), (w) => setWinnerKey('R2-1', w)));
+      container.appendChild(colR2.col);
+
+      const colR1 = createColumn('BABAK 1 (8 TIM)');
+      r1Matches.forEach((m, i) => colR1.group.appendChild(createMatchCard(`card-R1-${i}`, m.p1, m.p2, getWinnerKey(`R1-${i}`), (w) => setWinnerKey(`R1-${i}`, w))));
+      container.appendChild(colR1.col);
+    }
+
+    // STRUKTUR UNIVERSAL UNTUK BEBAS BERAPAPUN JUMLAH TIM (2 s/d N)
+    function renderUniversalBracket(container, t) {
+      let total = t.teams.length;
+      let assigned = t.spinAssignedTeams || [];
+
+      let NL = Math.ceil(total / 2);
+      let NR = Math.floor(total / 2);
+
+      let leftTeams = assigned.slice(0, NL);
+      let rightTeams = assigned.slice(NL, total);
+
+      let leftTree = buildSideTree(leftTeams, 'L', NL);
+      let rightTree = buildSideTree(rightTeams, 'R', NR);
+
+      // Render Left Columns
+      leftTree.rounds.forEach((round) => {
+        const col = createColumn(round.name);
+        round.matches.forEach((m) => {
+          if (m.isSingle) {
+            col.group.appendChild(createSingleCard(m.id, m.p1, 'Tim Menunggu'));
+          } else {
+            col.group.appendChild(createMatchCard(m.id, m.p1, m.p2, m.winner, (w) => setWinnerKey(m.id, w)));
+          }
+        });
+        container.appendChild(col.col);
+      });
+
+      // Render Final Column
+      let leftFinalist = leftTree.finalWinner;
+      let rightFinalist = rightTree.finalWinner;
+      const colFinal = createCenterFinalColumn(leftFinalist, rightFinalist, getWinnerKey('FINAL'));
+      container.appendChild(colFinal);
+
+      // Render Right Columns (Reversed order)
+      for (let r = rightTree.rounds.length - 1; r >= 0; r--) {
+        let round = rightTree.rounds[r];
+        const col = createColumn(round.name);
+        round.matches.forEach((m) => {
+          if (m.isSingle) {
+            col.group.appendChild(createSingleCard(m.id, m.p1, 'Tim Menunggu'));
+          } else {
+            col.group.appendChild(createMatchCard(m.id, m.p1, m.p2, m.winner, (w) => setWinnerKey(m.id, w)));
+          }
+        });
+        container.appendChild(col.col);
+      }
+    }
+
+    function buildSideTree(initialTeams, sidePrefix, totalCount) {
+      if (totalCount === 0) return { rounds: [], finalWinner: null };
+
+      let rounds = [];
+      let currentSlots = [];
+      for (let i = 0; i < totalCount; i++) {
+        currentSlots.push(initialTeams[i] || null);
+      }
+
+      let rIdx = 1;
+      while (currentSlots.length > 1) {
+        let matchCount = Math.floor(currentSlots.length / 2);
+        let hasOdd = (currentSlots.length % 2 !== 0);
+
+        let roundMatches = [];
+        let nextSlots = [];
+
+        for (let m = 0; m < matchCount; m++) {
+          let mId = `card-${sidePrefix}${rIdx}-${m}`;
+          let p1 = currentSlots[m * 2];
+          let p2 = currentSlots[m * 2 + 1];
+          let winner = getWinnerKey(mId);
+
+          roundMatches.push({ id: mId, p1, p2, winner, isSingle: false });
+          nextSlots.push(winner);
+        }
+
+        if (hasOdd) {
+          let oddTeam = currentSlots[currentSlots.length - 1];
+          let oddId = `card-${sidePrefix}${rIdx}-ODD`;
+          roundMatches.push({ id: oddId, p1: oddTeam, p2: null, winner: oddTeam, isSingle: true });
+          nextSlots.push(oddTeam);
+        }
+
+        let label = (sidePrefix === 'L') ? 'KIRI' : 'KANAN';
+        let rName = (currentSlots.length <= 2) ? `SEMI ${label}` : `BABAK ${rIdx} (${currentSlots.length} TIM)`;
+
+        rounds.push({ name: rName, matches: roundMatches });
+        currentSlots = nextSlots;
+        rIdx++;
+      }
+
+      return { rounds, finalWinner: currentSlots[0] || null };
+    }
+
+    function createColumn(title) {
+      const col = document.createElement('div');
+      col.className = 'flex-1 min-w-[120px] max-w-[150px] flex flex-col justify-around h-full gap-2 shrink-0';
+
+      const header = document.createElement('h3');
+      header.className = 'text-center text-[9px] font-black uppercase tracking-wider dark:text-amber-300 text-amber-700 py-1 dark:bg-white/5 bg-amber-500/10 rounded dark:border-white/10 border-amber-500/20 mb-1 shrink-0 truncate backdrop-blur-md shadow-sm px-1';
+      header.innerText = title;
+      col.appendChild(header);
+
+      const group = document.createElement('div');
+      group.className = 'flex flex-col justify-around flex-1 gap-2 h-full py-1';
+      col.appendChild(group);
+
+      return { col, group };
+    }
+
+    function createMatchCard(id, p1, p2, winner, onSelectWinner) {
+      const box = document.createElement('div');
+      box.id = id;
+      box.className = 'liquid-glass-card rounded-xl p-1.5 flex flex-col gap-1 my-auto shadow-md transition-all duration-300';
+
+      const b1 = createSlotBtn(p1, winner === p1 && p1 !== null, () => onSelectWinner(p1));
+      const b2 = createSlotBtn(p2, winner === p2 && p2 !== null, () => onSelectWinner(p2));
+
+      box.appendChild(b1);
+      box.appendChild(b2);
+      return box;
+    }
+
+    function createSingleCard(id, name, note) {
+      const box = document.createElement('div');
+      box.id = id;
+      box.className = 'liquid-glass-card rounded-xl p-1.5 flex flex-col gap-1 my-auto shadow-md border-amber-500/30';
+
+      const b1 = createSlotBtn(name, false, () => {});
+      b1.disabled = true;
+
+      const sub = document.createElement('div');
+      sub.className = 'text-[8px] font-bold text-amber-500 text-center italic';
+      sub.innerText = note;
+
+      box.appendChild(b1);
+      box.appendChild(sub);
+      return box;
+    }
+
+    function createCenterFinalColumn(p1, p2, winner) {
+      const col = document.createElement('div');
+      col.className = 'flex-1 min-w-[130px] max-w-[160px] flex flex-col items-center justify-center h-full gap-2 z-20 shrink-0';
+
+      const title = document.createElement('div');
+      title.className = 'text-[9px] font-black tracking-widest text-amber-500 uppercase flex items-center gap-1';
+      title.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8m-4-4v4m-5-13V4a1 1 0 011-1h8a1 1 0 011 1v3m-10 0a4 4 0 004 4h2a4 4 0 004-4m-10 0H3a2 2 0 02-2 2v2a4 4 0 004 4h1m12-8h3a2 2 0 012 2v2a4 4 0 00-4 4h-1"/></svg> <span>FINAL</span>';
+
+      const box = document.createElement('div');
+      box.id = 'card-FINAL';
+      box.className = 'w-full liquid-glass border-2 border-[#FFD700] rounded-xl p-2 flex flex-col gap-1 shadow-2xl';
+
+      const b1 = createSlotBtn(p1, winner === p1 && p1 !== null, () => setWinnerKey('FINAL', p1));
+      const b2 = createSlotBtn(p2, winner === p2 && p2 !== null, () => setWinnerKey('FINAL', p2));
+
+      box.appendChild(b1);
+      box.appendChild(b2);
+
+      col.appendChild(title);
+      col.appendChild(box);
+      return col;
+    }
+
+    function createSlotBtn(name, isWinner, onClick) {
+      const btn = document.createElement('button');
+      btn.onclick = onClick;
+
+      let style = 'dark:text-slate-500 text-slate-400 dark:bg-slate-950/40 bg-slate-200/50 dark:border-white/5 border-slate-300 border-dashed';
+      let label = name || 'Kosong';
+      let badge = '';
+
+      if (name) {
+        if (isWinner) {
+          style = 'text-emerald-800 dark:text-emerald-300 bg-emerald-400/20 dark:bg-emerald-950/80 border-emerald-500/60 font-extrabold shadow-sm';
+          badge = '<svg class="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+        } else {
+          style = 'dark:text-slate-200 text-slate-800 dark:bg-white/5 bg-white border-slate-300 dark:border-white/10 hover:border-[#FFD700] cursor-pointer shadow-sm';
+        }
+      } else {
+        btn.disabled = true;
+      }
+
+      btn.className = `w-full px-2 py-1 rounded-lg text-[9px] md:text-[10px] font-semibold flex justify-between items-center border transition ${style}`;
+      btn.innerHTML = `<span class="truncate">${label}</span> ${badge}`;
+      return btn;
+    }
+
+    // FUNGSI GARIS PENGHUBUNG SVG DINAMIS
+    function drawBracketConnectingLines() {
+      const svg = document.getElementById('bracketSvgOverlay');
+      if (!svg) return;
+      svg.innerHTML = '';
+
+      const t = getActiveTourney();
+      if (!t.teams || t.teams.length === 0) return;
+
+      const wrapper = document.getElementById('bracketViewWrapper');
+      const wrapperRect = wrapper.getBoundingClientRect();
+
+      const getPoint = (id, edge, slot = 'center') => {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        let x = (edge === 'left') ? (r.left - wrapperRect.left) : (r.right - wrapperRect.left);
+        let y = r.top + r.height / 2 - wrapperRect.top;
+
+        if (slot === 'top') y = r.top + r.height * 0.28 - wrapperRect.top;
+        if (slot === 'bottom') y = r.top + r.height * 0.72 - wrapperRect.top;
+
+        return { x, y };
+      };
+
+      const drawPath = (p1, p2, customTurnX = null) => {
+        if (!p1 || !p2) return;
+        let midX = customTurnX !== null ? customTurnX : (p1.x + p2.x) / 2;
+        let pathStr = `M ${p1.x} ${p1.y} H ${midX} V ${p2.y} H ${p2.x}`;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathStr);
+        path.setAttribute('stroke', currentTheme === 'dark' ? 'rgba(255, 215, 0, 0.5)' : 'rgba(234, 179, 8, 0.7)');
+        path.setAttribute('stroke-width', '2.5');
+        path.setAttribute('fill', 'none');
+        svg.appendChild(path);
+      };
+
+      if (t.teams.length === 19) {
+        // GARIS ALUR PRESISI 19 TIM (TERMASUK CYAN PASS-OVER)
+        drawPath(getPoint('card-L1-0', 'right'), getPoint('card-L2-0', 'left', 'top'));
+        drawPath(getPoint('card-L1-1', 'right'), getPoint('card-L2-0', 'left', 'bottom'));
+
+        drawPath(getPoint('card-L1-2', 'right'), getPoint('card-L2-1', 'left', 'top'));
+        drawPath(getPoint('card-L1-3', 'right'), getPoint('card-L2-1', 'left', 'bottom'));
+
+        drawPath(getPoint('card-L1-4', 'right'), getPoint('card-L2-2', 'left', 'top'));
+        drawPath(getPoint('card-L1-T11', 'right'), getPoint('card-L2-2', 'left', 'bottom'));
+
+        // GARIS CYAN: Match 1 B2 -> Pass Over B3 -> SEMI KIRI TOP
+        const pL2_0 = getPoint('card-L2-0', 'right');
+        const pLSemi_Top = getPoint('card-LSemi-0', 'left', 'top');
+        const pL3 = getPoint('card-L3-0', 'right');
+        let customX = pL3 ? (pL3.x + 20) : ((pL2_0.x + pLSemi_Top.x) / 2);
+        drawPath(pL2_0, pLSemi_Top, customX);
+
+        drawPath(getPoint('card-L2-1', 'right'), getPoint('card-L3-0', 'left', 'top'));
+        drawPath(getPoint('card-L2-2', 'right'), getPoint('card-L3-0', 'left', 'bottom'));
+
+        drawPath(getPoint('card-L3-0', 'right'), getPoint('card-LSemi-0', 'left', 'bottom'));
+        drawPath(getPoint('card-LSemi-0', 'right'), getPoint('card-FINAL', 'left', 'top'));
+
+        // SISI KANAN
+        drawPath(getPoint('card-R1-0', 'left'), getPoint('card-R2-0', 'right', 'top'));
+        drawPath(getPoint('card-R1-1', 'left'), getPoint('card-R2-0', 'right', 'bottom'));
+
+        drawPath(getPoint('card-R1-2', 'left'), getPoint('card-R2-1', 'right', 'top'));
+        drawPath(getPoint('card-R1-3', 'left'), getPoint('card-R2-1', 'right', 'bottom'));
+
+        drawPath(getPoint('card-R2-0', 'left'), getPoint('card-RSemi-0', 'right', 'top'));
+        drawPath(getPoint('card-R2-1', 'left'), getPoint('card-RSemi-0', 'right', 'bottom'));
+
+        drawPath(getPoint('card-RSemi-0', 'left'), getPoint('card-FINAL', 'right', 'bottom'));
+      } else {
+        // GARIS AUTOMATIS UNTUK BAGAN UNIVERSAL DINAMIS
+        const connectSide = (sidePrefix) => {
+          let r = 1;
+          while (true) {
+            let matches = document.querySelectorAll(`[id^="card-${sidePrefix}${r}-"]`);
+            let nextMatches = document.querySelectorAll(`[id^="card-${sidePrefix}${r+1}-"]`);
+            if (matches.length === 0) break;
+
+            if (nextMatches.length > 0) {
+              matches.forEach((mEl, mIdx) => {
+                let targetIdx = Math.floor(mIdx / 2);
+                let targetEl = nextMatches[targetIdx] || nextMatches[0];
+                let isTop = (mIdx % 2 === 0);
+                
+                if (sidePrefix === 'L') {
+                  drawPath(getPoint(mEl.id, 'right'), getPoint(targetEl.id, 'left', isTop ? 'top' : 'bottom'));
+                } else {
+                  drawPath(getPoint(mEl.id, 'left'), getPoint(targetEl.id, 'right', isTop ? 'top' : 'bottom'));
+                }
+              });
+            } else {
+              // Connect Last Round match to FINAL
+              matches.forEach((mEl) => {
+                if (sidePrefix === 'L') {
+                  drawPath(getPoint(mEl.id, 'right'), getPoint('card-FINAL', 'left', 'top'));
+                } else {
+                  drawPath(getPoint(mEl.id, 'left'), getPoint('card-FINAL', 'right', 'bottom'));
+                }
+              });
+            }
+            r++;
+          }
+        };
+
+        connectSide('L');
+        connectSide('R');
+      }
+    }
+
+    function drawWheel() {
+      const t = getActiveTourney();
+      const numOptions = (t.remainingTeams) ? t.remainingTeams.length : 0;
+      const arcSize = (2 * Math.PI) / (numOptions || 1);
+      const outsideRadius = 105;
+      const textRadius = 72;
+      const insideRadius = 22;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (numOptions === 0) {
+        ctx.fillStyle = (currentTheme === 'dark') ? "#1e293b" : "#e2e8f0";
+        ctx.beginPath();
+        ctx.arc(120, 120, outsideRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = (currentTheme === 'dark') ? "#94a3b8" : "#64748b";
+        ctx.font = "bold 11px Plus Jakarta Sans";
+        ctx.textAlign = "center";
+        ctx.fillText(t.teams && t.teams.length > 0 ? "Semua Selesai!" : "Belum Ada Tim", 120, 124);
+        return;
+      }
+
+      for (let i = 0; i < numOptions; i++) {
+        const angle = startAngle + i * arcSize;
+        ctx.fillStyle = colors[i % colors.length];
+
+        ctx.beginPath();
+        ctx.arc(120, 120, outsideRadius, angle, angle + arcSize, false);
+        ctx.arc(120, 120, insideRadius, angle + arcSize, angle, true);
+        ctx.fill();
+        ctx.strokeStyle = (currentTheme === 'dark') ? "#090d16" : "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.fillStyle = (i % colors.length === 0) ? "#0f172a" : "#ffffff";
+        ctx.font = "bold 9px Plus Jakarta Sans";
+        ctx.translate(120 + Math.cos(angle + arcSize / 2) * textRadius, 120 + Math.sin(angle + arcSize / 2) * textRadius);
+        ctx.rotate(angle + arcSize / 2 + Math.PI / 2);
+        const text = t.remainingTeams[i];
+        ctx.fillText(text.length > 10 ? text.substring(0, 8) + ".." : text, -ctx.measureText(text).width / 2, 0);
+        ctx.restore();
+      }
+
+      ctx.beginPath();
+      ctx.arc(120, 120, insideRadius, 0, 2 * Math.PI);
+      ctx.fillStyle = (currentTheme === 'dark') ? "#0f172a" : "#ffffff";
+      ctx.fill();
+      ctx.strokeStyle = "#FFD700";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    let spinStartTime = null;
+    let spinAngleStart = 0;
+    let spinTimeTotal = 0;
+
+    function spin() {
+      const t = getActiveTourney();
+      if (isSpinning || !t.remainingTeams || t.remainingTeams.length === 0) return;
+      isSpinning = true;
+      document.getElementById('spinBtn').disabled = true;
+
+      spinAngleStart = Math.random() * 10 + 10;
+      spinTimeTotal = Math.random() * 3000 + 4000;
+      spinStartTime = performance.now();
+
+      requestAnimationFrame(rotateWheelStep);
+    }
+
+    function rotateWheelStep(now) {
+      const elapsed = now - spinStartTime;
+      if (elapsed >= spinTimeTotal) {
+        stopRotateWheel();
+        return;
+      }
+      const spinAngle = spinAngleStart - easeOut(elapsed, 0, spinAngleStart, spinTimeTotal);
+      startAngle += (spinAngle * Math.PI) / 180;
+      drawWheel();
+
+      requestAnimationFrame(rotateWheelStep);
+    }
+
+    function stopRotateWheel() {
+      isSpinning = false;
+      document.getElementById('spinBtn').disabled = false;
+
+      const t = getActiveTourney();
+      const numOptions = t.remainingTeams.length;
+      const degrees = (startAngle * 180) / Math.PI + 90;
+      const arcd = (360 / numOptions);
+      const index = Math.floor((360 - (degrees % 360)) / arcd) % numOptions;
+
+      const selectedTeam = t.remainingTeams[index];
+      t.remainingTeams.splice(index, 1);
+      drawWheel();
+
+      const sideAssigned = addTeamToBracket(selectedTeam);
+
+      document.getElementById('winnerName').innerText = selectedTeam;
+      document.getElementById('winnerSlotInfo').innerText = `Masuk ke ${sideAssigned}`;
+      document.getElementById('winnerModal').classList.remove('hidden');
+
+      renderUI();
+    }
+
+    function easeOut(t, b, c, d) {
+      const ts = (t /= d) * t;
+      const tc = ts * t;
+      return b + c * (tc + -3 * ts + 3 * t);
+    }
+
+    function resetCurrentTourney() {
+      if (confirm("Reset ulang pengundian dan bagan untuk lomba ini?")) {
+        const t = getActiveTourney();
+        let resetTourney = buildTourneyObject(t.name, t.teams);
+        resetTourney.id = t.id;
+
+        let idx = tournaments.findIndex(item => item.id === t.id);
+        tournaments[idx] = resetTourney;
+
+        saveToLocalStorage();
+        loadActiveTourney();
+      }
+    }
+
+    function openModal() {
+      const t = getActiveTourney();
+      document.getElementById('teamInput').value = (t.teams && t.teams.length > 0) ? t.teams.join('\n') : '';
+      document.getElementById('inputModal').classList.remove('hidden');
+    }
+    function closeModal() { document.getElementById('inputModal').classList.add('hidden'); }
+    function closeWinnerModal() { document.getElementById('winnerModal').classList.add('hidden'); }
+    function closeChampionModal() { document.getElementById('championModal').classList.add('hidden'); }
+
+    function loadPresets(count) {
+      if (count === 19) {
+        document.getElementById('teamInput').value = preset19Teams.join('\n');
+      }
+    }
+
+    function clearTeamsInput() {
+      document.getElementById('teamInput').value = '';
+    }
+
+    function saveTeams() {
+      const rawText = document.getElementById('teamInput').value;
+      const parsedTeams = rawText.split('\n').map(t => t.trim()).filter(t => t.length > 0);
+
+      const current = getActiveTourney();
+      let updatedTourney = buildTourneyObject(current.name, parsedTeams);
+      updatedTourney.id = current.id;
+
+      let idx = tournaments.findIndex(item => item.id === current.id);
+      tournaments[idx] = updatedTourney;
+
+      saveToLocalStorage();
+      closeModal();
+      loadActiveTourney();
+    }
+  </script>
+</body>
+</html>
