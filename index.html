@@ -2,8 +2,8 @@
 <html lang="id" class="dark h-full">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="pageTitle">TourneyMaster Pro - Automatic Tournament & Bracket Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title id="pageTitle">SpinTerusGan - Spin dan Buat Bagan Otomatis</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -27,10 +27,10 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
 
     .dark .liquid-glass {
-      background: rgba(15, 23, 42, 0.78);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 215, 0, 0.22);
@@ -57,14 +57,26 @@
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .touch-scroll {
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x pan-y;
+    }
+    
     #bracketViewWrapper { position: relative; }
   </style>
 </head>
 <body class="min-h-screen md:h-full flex flex-col justify-between selection:bg-[#FFD700] selection:text-slate-950 relative transition-colors duration-300 dark:bg-[#060911] dark:text-slate-100 bg-slate-100 text-slate-800">
 
   <!-- BACKGROUND GLOWS -->
-  <div class="fixed top-[-10%] left-[-10%] w-[350px] md:w-[500px] h-[350px] md:h-[500px] bg-[#FFD700]/15 rounded-full blur-[130px] pointer-events-none z-0"></div>
-  <div class="fixed bottom-[-10%] right-[-10%] w-[350px] md:w-[500px] h-[350px] md:h-[500px] bg-amber-500/10 rounded-full blur-[130px] pointer-events-none z-0"></div>
+  <div class="fixed top-[-10%] left-[-10%] w-[280px] md:w-[500px] h-[280px] md:h-[500px] bg-[#FFD700]/15 rounded-full blur-[100px] md:blur-[130px] pointer-events-none z-0"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[280px] md:w-[500px] h-[280px] md:h-[500px] bg-amber-500/10 rounded-full blur-[100px] md:blur-[130px] pointer-events-none z-0"></div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-900/90 text-amber-400 border border-amber-500/40 text-xs font-bold shadow-2xl backdrop-blur-md transition-all duration-300 transform -translate-y-12 opacity-0 pointer-events-none flex items-center gap-2">
+    <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span id="toastMsg">Notification</span>
+  </div>
 
   <!-- EXIT FULL VIEW BUTTON -->
   <button id="exitFullViewBtn" onclick="toggleFullView()" class="fixed top-3 right-3 z-50 hidden px-3.5 py-1.5 dark:bg-slate-900/90 light:bg-white/90 text-slate-200 border border-[#FFD700]/40 text-xs font-bold rounded-xl backdrop-blur-md transition shadow-2xl flex items-center gap-2 opacity-80 hover:opacity-100">
@@ -73,39 +85,36 @@
   </button>
 
   <!-- HEADER NAVBAR -->
-  <header id="mainHeader" class="border-b dark:border-white/10 border-slate-200 dark:bg-slate-950/75 bg-white/85 backdrop-blur-md px-4 md:px-8 py-2.5 items-center justify-between gap-4 shrink-0 z-30 transition-all duration-300 hidden">
+  <header id="mainHeader" class="border-b dark:border-white/10 border-slate-200 dark:bg-slate-950/85 bg-white/90 backdrop-blur-md px-3 md:px-8 py-2 md:py-2.5 items-center justify-between gap-2 shrink-0 z-30 transition-all duration-300 hidden flex-wrap md:flex-nowrap">
     
     <!-- BRAND LOGO -->
-    <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('home')">
-      <div class="w-9 h-9 bg-gradient-to-br from-[#FFD700] to-amber-500 text-slate-950 rounded-xl font-black text-lg flex items-center justify-center shadow-lg border border-amber-300">
-        <svg class="w-5 h-5 text-slate-950" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/></svg>
-      </div>
+    <div class="flex items-center cursor-pointer shrink-0" onclick="switchView('home')">
       <div>
-        <h1 class="font-extrabold text-sm md:text-base tracking-tight leading-none dark:text-white text-slate-900 flex items-center gap-2">
-          TourneyMaster <span class="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-400/30 px-1.5 py-0.5 rounded-full uppercase font-black tracking-widest">PRO</span>
+        <h1 class="font-extrabold text-sm md:text-lg tracking-tight leading-none dark:text-white text-slate-900">
+          SpinTerusGan
         </h1>
-        <p class="text-[10px] dark:text-slate-400 text-slate-500 font-medium">Automatic Bracket & Spin Engine</p>
+        <p class="text-[9px] md:text-[10px] dark:text-slate-400 text-slate-500 font-medium mt-0.5">Spin dan Buat Bagan Otomatis</p>
       </div>
     </div>
 
-    <!-- MAIN NAVIGATION TABS -->
-    <nav id="headerNavTabs" class="flex items-center gap-1 bg-slate-200/60 dark:bg-white/5 p-1 rounded-xl border dark:border-white/10 border-slate-300">
-      <button id="navHome" onclick="switchView('home')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 dark:text-slate-300 text-slate-700 hover:text-amber-500">
+    <!-- MAIN NAVIGATION TABS (Scrollable on Mobile) -->
+    <nav id="headerNavTabs" class="flex items-center gap-1 bg-slate-200/60 dark:bg-white/5 p-1 rounded-xl border dark:border-white/10 border-slate-300 overflow-x-auto no-scrollbar w-full md:w-auto order-3 md:order-2 shrink-0">
+      <button id="navHome" onclick="switchView('home')" class="px-2.5 py-1.5 md:px-3 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 dark:text-slate-300 text-slate-700 hover:text-amber-500">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 00-1 1m-6 0h6"/></svg>
         <span>Beranda</span>
       </button>
-      <button id="navSpin" onclick="switchView('spin')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+      <button id="navSpin" onclick="switchView('spin')" class="px-2.5 py-1.5 md:px-3.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         <span>Mode Spin + Bagan</span>
       </button>
-      <button id="navDirect" onclick="switchView('direct')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+      <button id="navDirect" onclick="switchView('direct')" class="px-2.5 py-1.5 md:px-3.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         <span>Mode Bagan Direct</span>
       </button>
     </nav>
 
     <!-- RIGHT CONTROLS -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1.5 ml-auto md:ml-0 order-2 md:order-3">
       <button onclick="toggleTheme()" title="Ubah Mode Tampilan" class="p-2 rounded-xl border transition-all dark:bg-slate-900 dark:border-[#FFD700]/30 bg-slate-200 border-amber-400/50 shadow-inner text-amber-500">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       </button>
@@ -118,11 +127,11 @@
   </header>
 
   <!-- MULTI-TOURNAMENT TABS BAR -->
-  <div id="tabsBar" class="border-b dark:border-white/10 border-slate-200 dark:bg-slate-950/80 bg-slate-200/60 backdrop-blur-md px-4 md:px-8 py-1.5 flex items-center justify-between gap-3 shrink-0 z-20 overflow-x-auto no-scrollbar hidden">
-    <div id="tabsContainer" class="flex items-center gap-2 overflow-x-auto no-scrollbar"></div>
-    <button onclick="openAddTourneyModal()" class="px-3 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 shadow-sm">
+  <div id="tabsBar" class="border-b dark:border-white/10 border-slate-200 dark:bg-slate-950/80 bg-slate-200/60 backdrop-blur-md px-3 md:px-8 py-1.5 flex items-center justify-between gap-2 shrink-0 z-20 overflow-x-auto touch-scroll no-scrollbar hidden">
+    <div id="tabsContainer" class="flex items-center gap-2 overflow-x-auto touch-scroll no-scrollbar"></div>
+    <button onclick="openAddTourneyModal()" class="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 shadow-sm">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-      <span>+ Tambah Bagan Lomba</span>
+      <span>Tambah Bagan</span>
     </button>
   </div>
 
@@ -130,69 +139,64 @@
   <main class="flex-1 overflow-y-auto relative z-10 flex flex-col justify-between">
 
     <!-- VIEW 1: LANDING PAGE BERANDA -->
-    <section id="viewHome" class="flex-1 flex flex-col justify-between p-4 md:p-8 max-w-6xl mx-auto w-full gap-8">
+    <section id="viewHome" class="flex-1 flex flex-col justify-between p-3 md:p-8 max-w-6xl mx-auto w-full gap-6 md:gap-8">
       
       <!-- HERO BANNER SECTION -->
-      <div class="liquid-glass rounded-3xl p-6 md:p-12 text-center flex flex-col items-center justify-center my-auto shadow-2xl relative overflow-hidden border border-[#FFD700]/30">
+      <div class="liquid-glass rounded-3xl p-5 md:p-12 text-center flex flex-col items-center justify-center my-auto shadow-2xl relative overflow-hidden border border-[#FFD700]/30">
         
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-12 h-12 bg-gradient-to-br from-[#FFD700] to-amber-500 text-slate-950 rounded-2xl font-black text-2xl flex items-center justify-center shadow-xl border border-amber-300">
-            <svg class="w-6 h-6 text-slate-950" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/></svg>
-          </div>
-          <div class="text-left">
-            <h1 class="font-black text-xl md:text-2xl tracking-tight dark:text-white text-slate-900 leading-none">
-              TourneyMaster <span class="text-xs bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded-full uppercase font-black tracking-widest">PRO</span>
-            </h1>
-            <p class="text-xs dark:text-slate-400 text-slate-500 font-medium mt-1">Universal Tournament Bracket & Spin System</p>
-          </div>
+        <div class="mb-3 md:mb-5">
+          <h1 class="font-black text-2xl md:text-4xl tracking-tight dark:text-white text-slate-900 leading-none">
+            SpinTerusGan
+          </h1>
+          <p class="text-xs md:text-sm dark:text-amber-300 text-amber-600 font-bold mt-1 tracking-wide">Spin dan Buat Bagan Otomatis</p>
         </div>
 
-        <h2 class="text-3xl md:text-5xl font-black tracking-tight dark:text-white text-slate-900 max-w-3xl leading-tight">
+        <h2 class="text-2xl md:text-5xl font-black tracking-tight dark:text-white text-slate-900 max-w-3xl leading-tight">
           Kelola & Buat Bagan Pertandingan <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD700] to-amber-500">Tanpa Ribet</span>
         </h2>
         
-        <p class="text-xs md:text-base dark:text-slate-300 text-slate-600 max-w-2xl mt-4 leading-relaxed font-medium">
+        <p class="text-xs md:text-base dark:text-slate-300 text-slate-600 max-w-2xl mt-3 md:mt-4 leading-relaxed font-medium">
           Solusi terpadu untuk panitia kegiatan Futsal, Basket, E-Sports, Badminton, Classmeet, Cerdas Cermat, hingga kompetisi umum. Pilih mode pengundian Roda Acak (Spin Wheel) atau pengisian bagan secara langsung!
         </p>
 
         <!-- KARTU PILIHAN MODE A & B -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-8 w-full max-w-2xl text-left">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 mt-6 md:mt-8 w-full max-w-2xl text-left">
           
           <!-- MODE A: SPIN + BAGAN -->
-          <div onclick="switchView('spin')" class="liquid-glass-card rounded-2xl p-6 border border-amber-500/40 hover:border-[#FFD700] cursor-pointer transition-all transform hover:-translate-y-1 shadow-xl group flex flex-col justify-between">
+          <div onclick="switchView('spin')" class="liquid-glass-card rounded-2xl p-5 border border-amber-500/40 hover:border-[#FFD700] cursor-pointer transition-all transform hover:-translate-y-1 shadow-xl group flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <div class="flex items-center justify-between mb-2 md:mb-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 </div>
-                <span class="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-300 px-2.5 py-1 rounded-md font-bold uppercase tracking-wider">Mode A</span>
+                <span class="text-[9px] md:text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-300 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Mode A</span>
               </div>
-              <h3 class="font-extrabold text-base md:text-lg dark:text-white text-slate-900 group-hover:text-amber-500 transition">Spin Wheel + Bagan</h3>
-              <p class="text-xs dark:text-slate-400 text-slate-500 mt-2 leading-relaxed">
+              <h3 class="font-extrabold text-sm md:text-lg dark:text-white text-slate-900 group-hover:text-amber-500 transition">Spin Wheel + Bagan</h3>
+              <p class="text-xs dark:text-slate-400 text-slate-500 mt-1.5 leading-relaxed">
                 Undi nama tim satu per satu secara interaktif menggunakan Roda Putar. Hasil undian langsung terisi otomatis ke bagan.
               </p>
             </div>
-            <div class="mt-5 pt-3 border-t dark:border-white/10 border-slate-200 flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-400">
+            <div class="mt-4 pt-2.5 border-t dark:border-white/10 border-slate-200 flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-400">
               <span>Mulai Mode Spin</span>
               <span class="text-base">&rarr;</span>
             </div>
           </div>
 
           <!-- MODE B: BAGAN DIRECT -->
-          <div onclick="switchView('direct')" class="liquid-glass-card rounded-2xl p-6 border border-amber-500/40 hover:border-[#FFD700] cursor-pointer transition-all transform hover:-translate-y-1 shadow-xl group flex flex-col justify-between">
+          <div onclick="switchView('direct')" class="liquid-glass-card rounded-2xl p-5 border border-amber-500/40 hover:border-[#FFD700] cursor-pointer transition-all transform hover:-translate-y-1 shadow-xl group flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <div class="flex items-center justify-between mb-2 md:mb-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
-                <span class="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 px-2.5 py-1 rounded-md font-bold uppercase tracking-wider">Mode B</span>
+                <span class="text-[9px] md:text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Mode B</span>
               </div>
-              <h3 class="font-extrabold text-base md:text-lg dark:text-white text-slate-900 group-hover:text-amber-500 transition">Bagan Direct / Manual</h3>
-              <p class="text-xs dark:text-slate-400 text-slate-500 mt-2 leading-relaxed">
+              <h3 class="font-extrabold text-sm md:text-lg dark:text-white text-slate-900 group-hover:text-amber-500 transition">Bagan Direct / Manual</h3>
+              <p class="text-xs dark:text-slate-400 text-slate-500 mt-1.5 leading-relaxed">
                 Tentukan jumlah tim (2 s/d 32+ tim), bagan otomatis terbuat dan siap diisi daftar nama tim di Babak 1 secara langsung.
               </p>
             </div>
-            <div class="mt-5 pt-3 border-t dark:border-white/10 border-slate-200 flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <div class="mt-4 pt-2.5 border-t dark:border-white/10 border-slate-200 flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
               <span>Mulai Bagan Direct</span>
               <span class="text-base">&rarr;</span>
             </div>
@@ -202,30 +206,30 @@
       </div>
 
       <!-- ABOUT APP & PURPOSE SECTION -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-2">
-        <div class="liquid-glass-card rounded-2xl p-6 flex flex-col gap-3">
-          <div class="flex items-center gap-2 text-amber-500 font-extrabold text-sm uppercase tracking-wider">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 my-1">
+        <div class="liquid-glass-card rounded-2xl p-5 flex flex-col gap-2.5">
+          <div class="flex items-center gap-2 text-amber-500 font-extrabold text-xs md:text-sm uppercase tracking-wider">
+            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <h3>Tentang Aplikasi & Tujuan</h3>
           </div>
           <p class="text-xs dark:text-slate-300 text-slate-600 leading-relaxed">
-            <strong>TourneyMaster Pro</strong> diciptakan untuk menyelesaikan kendala klasik panitia dalam menyusun bagan pertandingan secara akurat, adil, dan estetis. 
+            <strong>SpinTerusGan</strong> diciptakan untuk menyelesaikan kendala klasik panitia dalam menyusun bagan pertandingan secara akurat, adil, dan estetis. 
           </p>
           <p class="text-xs dark:text-slate-400 text-slate-500 leading-relaxed">
             Mendukung Playoff Repechage Universal, Knockout 2 Tim, Tri-Match (3 Tim/Match), Group Battle (4 Tim/Match), serta alur garis presisi tanpa hambatan.
           </p>
         </div>
 
-        <div class="liquid-glass-card rounded-2xl p-6 flex flex-col gap-3">
-          <div class="flex items-center gap-2 text-amber-500 font-extrabold text-sm uppercase tracking-wider">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+        <div class="liquid-glass-card rounded-2xl p-5 flex flex-col gap-2.5">
+          <div class="flex items-center gap-2 text-amber-500 font-extrabold text-xs md:text-sm uppercase tracking-wider">
+            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
             <h3>Informasi Pembuat & Pengembang</h3>
           </div>
           <p class="text-xs dark:text-slate-300 text-slate-600 leading-relaxed">
-            Didevelop secara profesional oleh <strong>RAZUHFGKRUAY</strong> dengan visi menyediakan <em>tool tournament generator</em> gratis, tanpa iklan mengganggu, dan universal bagi seluruh panitia di Indonesia.
+            Didevelop oleh <strong>RAZUHFGKRUAY</strong> dengan visi menyediakan <em>tool tournament generator</em> gratis, tanpa iklan mengganggu, dan universal bagi seluruh panitia di Indonesia.
           </p>
-          <div class="mt-auto pt-2 flex items-center gap-2 text-[11px] font-bold dark:text-amber-300 text-amber-700">
-            <span class="px-2 py-0.5 bg-amber-500/15 rounded border border-amber-500/30">Versi 9.2 Complete Connector Logic</span>
+          <div class="mt-auto pt-2 flex flex-wrap items-center gap-2 text-[10px] font-bold dark:text-amber-300 text-amber-700">
+            <span class="px-2 py-0.5 bg-amber-500/15 rounded border border-amber-500/30">Versi 9.5</span>
             <span class="px-2 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 rounded border border-emerald-500/30">Free & Open Access</span>
           </div>
         </div>
@@ -237,41 +241,48 @@
     <section id="viewDashboard" class="flex-1 p-2 md:p-4 flex-col md:flex-row gap-3 md:gap-4 overflow-y-auto md:overflow-hidden h-full hidden">
       
       <!-- BRACKET PANEL -->
-      <section id="bracketPanel" class="order-1 md:order-2 flex-1 liquid-glass rounded-2xl p-2.5 md:p-3 flex flex-col justify-between min-h-[520px] md:min-h-0 h-auto md:h-full overflow-hidden">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b dark:border-white/10 border-slate-200 pb-2 shrink-0">
-          <div class="flex items-center gap-2 md:gap-3 text-xs">
-            <h2 class="font-extrabold text-xs tracking-wider uppercase dark:text-amber-300 text-amber-700 flex items-center gap-1.5">
+      <section id="bracketPanel" class="order-1 md:order-2 flex-1 liquid-glass rounded-2xl p-2.5 md:p-3 flex flex-col justify-between min-h-[480px] md:min-h-0 h-auto md:h-full overflow-hidden">
+        
+        <!-- DASHBOARD HEADER & ACTION BUTTONS -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b dark:border-white/10 border-slate-200 pb-2 shrink-0">
+          <div class="flex items-center gap-1.5 md:gap-2 text-xs overflow-x-auto touch-scroll no-scrollbar py-0.5">
+            <h2 class="font-extrabold text-xs tracking-wider uppercase dark:text-amber-300 text-amber-700 flex items-center gap-1 shrink-0">
               <svg class="w-4 h-4 text-[#FFD700]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              <span id="activeBracketTitle">Bagan Pertandingan Turnamen</span>
+              <span id="activeBracketTitle" class="truncate max-w-[140px] sm:max-w-xs">Bagan Pertandingan Turnamen</span>
             </h2>
-            <span class="dark:text-slate-600 text-slate-300">|</span>
-            <span class="dark:text-slate-400 text-slate-500">Total: <strong id="totalTeamsCount" class="dark:text-white text-slate-900">0</strong> Tim</span>
-            <span class="dark:text-slate-600 text-slate-300">|</span>
-            <span id="formatBadgeInfo" class="text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold uppercase">Format: 2 Tim/Match</span>
+            <span class="dark:text-slate-600 text-slate-300 shrink-0">|</span>
+            <span class="dark:text-slate-400 text-slate-500 shrink-0">Total: <strong id="totalTeamsCount" class="dark:text-white text-slate-900">0</strong> Tim</span>
+            <span class="dark:text-slate-600 text-slate-300 shrink-0">|</span>
+            <span id="formatBadgeInfo" class="text-[9px] bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold uppercase shrink-0">Format: 2 Tim/Match</span>
           </div>
 
-          <!-- DASHBOARD ACTION BUTTONS -->
-          <div class="flex items-center gap-2">
-            <button onclick="openModal()" class="px-2.5 py-1 bg-[#FFD700] hover:bg-amber-400 text-slate-950 text-[11px] font-black rounded-lg transition flex items-center gap-1 shadow-sm">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-              <span>Edit Tim & Format</span>
+          <!-- ACTION BUTTONS (MOBILE OPTIMIZED) -->
+          <div class="flex items-center gap-1.5 overflow-x-auto touch-scroll no-scrollbar py-0.5 shrink-0">
+            <button onclick="shareViaLink()" title="Bagikan Link Bagan Ini" class="px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-[11px] font-black rounded-lg transition flex items-center gap-1 shadow-sm shrink-0 active:scale-95">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.367 3 3 0 000 5.367zm0 8a3 3 0 100-5.367 3 3 0 000 5.367z"/></svg>
+              <span>Bagikan Link</span>
             </button>
 
-            <button onclick="resetCurrentTourney()" class="px-2.5 py-1 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-300 border border-rose-400/30 text-[11px] font-semibold rounded-lg transition flex items-center gap-1">
+            <button onclick="openModal()" class="px-2.5 py-1.5 bg-[#FFD700] hover:bg-amber-400 text-slate-950 text-[11px] font-black rounded-lg transition flex items-center gap-1 shadow-sm shrink-0 active:scale-95">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <span>Edit Tim</span>
+            </button>
+
+            <button onclick="resetCurrentTourney()" class="px-2.5 py-1.5 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-300 border border-rose-400/30 text-[11px] font-semibold rounded-lg transition flex items-center gap-1 shrink-0 active:scale-95">
               <span>Reset</span>
             </button>
           </div>
         </div>
 
         <!-- BRACKET VIEW WITH SVG CONNECTORS -->
-        <div id="bracketViewWrapper" class="flex-1 w-full h-full overflow-x-auto overflow-y-hidden no-scrollbar">
-          <svg id="bracketSvgOverlay" class="absolute inset-0 w-full h-full pointer-events-none z-0" style="min-width: 900px;"></svg>
-          <div id="bracketView" class="relative z-10 flex gap-4 md:gap-6 items-center justify-between py-2 min-w-[900px] h-full no-scrollbar"></div>
+        <div id="bracketViewWrapper" class="flex-1 w-full h-full overflow-x-auto overflow-y-auto touch-scroll no-scrollbar relative">
+          <svg id="bracketSvgOverlay" class="absolute inset-0 w-full h-full pointer-events-none z-0" style="min-width: 850px;"></svg>
+          <div id="bracketView" class="relative z-10 flex gap-3 md:gap-6 items-center justify-between py-2 min-w-[850px] h-full no-scrollbar"></div>
         </div>
       </section>
 
       <!-- SPIN WHEEL PANEL -->
-      <section id="wheelPanel" class="order-2 md:order-1 w-full md:w-72 xl:w-80 liquid-glass rounded-2xl p-4 flex flex-col justify-between shrink-0 h-auto md:h-full transition-all duration-300">
+      <section id="wheelPanel" class="order-2 md:order-1 w-full md:w-72 xl:w-80 liquid-glass rounded-2xl p-3.5 md:p-4 flex flex-col justify-between shrink-0 h-auto md:h-full transition-all duration-300">
         <div class="flex items-center justify-between border-b dark:border-white/10 border-slate-200 pb-2">
           <h2 class="font-extrabold text-xs tracking-wider uppercase dark:text-amber-300 text-amber-700 flex items-center gap-2">
             <svg class="w-4 h-4 text-[#FFD700]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
@@ -282,18 +293,18 @@
           </span>
         </div>
 
-        <div class="relative flex items-center justify-center my-auto py-3">
-          <svg class="absolute top-2 z-20 w-5 h-5 text-amber-500 filter drop-shadow" fill="currentColor" viewBox="0 0 24 24"><path d="M12 16L6 8h12l-6 8z"/></svg>
-          <canvas id="wheelCanvas" width="240" height="240" class="max-w-[220px] md:max-w-full h-auto drop-shadow-xl"></canvas>
+        <div class="relative flex items-center justify-center my-auto py-2">
+          <svg class="absolute top-1 z-20 w-5 h-5 text-amber-500 filter drop-shadow" fill="currentColor" viewBox="0 0 24 24"><path d="M12 16L6 8h12l-6 8z"/></svg>
+          <canvas id="wheelCanvas" width="220" height="220" class="max-w-[200px] md:max-w-full h-auto drop-shadow-xl"></canvas>
         </div>
 
-        <button id="spinBtn" onclick="spin()" class="w-full py-3 bg-[#FFD700] hover:bg-[#E6C200] text-slate-950 font-black text-xs rounded-xl border border-amber-300 shadow-lg active:scale-[0.98] transition disabled:opacity-40 disabled:cursor-not-allowed">
+        <button id="spinBtn" onclick="spin()" class="w-full py-2.5 md:py-3 bg-[#FFD700] hover:bg-[#E6C200] text-slate-950 font-black text-xs rounded-xl border border-amber-300 shadow-lg active:scale-[0.98] transition disabled:opacity-40 disabled:cursor-not-allowed">
           MULAI SPIN WHEEL
         </button>
 
         <div class="pt-2 border-t dark:border-white/10 border-slate-200 mt-2">
           <p class="text-[10px] font-bold dark:text-slate-400 text-slate-500 mb-1.5 uppercase">Belum Di-Spin:</p>
-          <div id="remainingList" class="flex flex-wrap gap-1 max-h-20 overflow-y-auto text-[10px] pr-1"></div>
+          <div id="remainingList" class="flex flex-wrap gap-1 max-h-16 md:max-h-20 overflow-y-auto touch-scroll text-[10px] pr-1"></div>
         </div>
       </section>
 
@@ -302,62 +313,62 @@
   </main>
 
   <!-- FOOTER -->
-  <footer id="mainFooter" class="border-t dark:border-white/10 border-slate-200 dark:bg-slate-950/80 bg-white/80 backdrop-blur-md py-2 text-center text-[11px] dark:text-slate-500 text-slate-400 flex items-center justify-center gap-2 shrink-0 z-30 transition-all duration-300">
-    <span>&copy; 2026 <strong>TourneyMaster Pro</strong>. All rights reserved.</span>
-    <span>&bull;</span>
+  <footer id="mainFooter" class="border-t dark:border-white/10 border-slate-200 dark:bg-slate-950/80 bg-white/80 backdrop-blur-md py-2 px-3 text-center text-[10px] md:text-[11px] dark:text-slate-500 text-slate-400 flex items-center justify-center gap-2 shrink-0 z-30 transition-all duration-300 flex-wrap">
+    <span>&copy; 2026 <strong>SpinTerusGan</strong>.</span>
+    <span class="hidden sm:inline">&bull;</span>
     <span class="font-black tracking-widest dark:text-amber-400 text-amber-600">POWERED BY RAZUHFGKRUAY</span>
   </footer>
 
   <!-- MODAL: EDIT TEAMS & FORMAT MATCH -->
-  <div id="inputModal" class="fixed inset-0 dark:bg-slate-950/80 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="liquid-glass w-full max-w-lg rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
-      <h3 class="font-bold text-base dark:text-white text-slate-900">Edit Daftar Tim & Format Match</h3>
+  <div id="inputModal" class="fixed inset-0 dark:bg-slate-950/80 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-3 md:p-4 hidden">
+    <div class="liquid-glass w-full max-w-lg rounded-2xl p-4 md:p-5 shadow-2xl flex flex-col gap-3 max-h-[90vh] overflow-y-auto touch-scroll">
+      <h3 class="font-bold text-sm md:text-base dark:text-white text-slate-900">Edit Daftar Tim & Format Match</h3>
       
       <div>
         <label class="block text-xs font-bold dark:text-amber-300 text-amber-700 mb-1">Jumlah Tim per Match (Semua Babak):</label>
         <div class="grid grid-cols-3 gap-2">
-          <button type="button" id="btnFmt2" onclick="setSelectFormat(2)" class="px-3 py-1.5 rounded-xl border text-xs font-extrabold transition text-center border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-300">
+          <button type="button" id="btnFmt2" onclick="setSelectFormat(2)" class="px-2.5 py-1.5 rounded-xl border text-xs font-extrabold transition text-center border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-300">
             2 Tim / Match
           </button>
-          <button type="button" id="btnFmt3" onclick="setSelectFormat(3)" class="px-3 py-1.5 rounded-xl border text-xs font-semibold transition text-center border-slate-300 dark:border-white/10 dark:text-slate-400 text-slate-600">
+          <button type="button" id="btnFmt3" onclick="setSelectFormat(3)" class="px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition text-center border-slate-300 dark:border-white/10 dark:text-slate-400 text-slate-600">
             3 Tim / Match
           </button>
-          <button type="button" id="btnFmt4" onclick="setSelectFormat(4)" class="px-3 py-1.5 rounded-xl border text-xs font-semibold transition text-center border-slate-300 dark:border-white/10 dark:text-slate-400 text-slate-600">
+          <button type="button" id="btnFmt4" onclick="setSelectFormat(4)" class="px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition text-center border-slate-300 dark:border-white/10 dark:text-slate-400 text-slate-600">
             4 Tim / Match
           </button>
         </div>
       </div>
 
-      <p class="text-xs dark:text-slate-400 text-slate-500 mt-1">Masukkan nama tim/kelas (satu per baris). Bagan akan menyesuaikan secara otomatis.</p>
+      <p class="text-[11px] md:text-xs dark:text-slate-400 text-slate-500 mt-0.5">Masukkan nama tim/kelas (satu per baris). Bagan akan menyesuaikan secara otomatis.</p>
       
-      <div class="flex flex-wrap gap-2 mb-1">
-        <button onclick="loadPresets(19)" class="px-2.5 py-1 bg-[#FFD700]/20 hover:bg-[#FFD700]/30 text-amber-600 dark:text-amber-300 border border-[#FFD700]/40 rounded-lg text-xs font-bold transition">
+      <div class="flex flex-wrap gap-1.5 mb-1">
+        <button onclick="loadPresets(19)" class="px-2 py-1 bg-[#FFD700]/20 hover:bg-[#FFD700]/30 text-amber-600 dark:text-amber-300 border border-[#FFD700]/40 rounded-lg text-[11px] font-bold transition">
           + Template 19 Tim
         </button>
-        <button onclick="loadPresets(18)" class="px-2.5 py-1 bg-sky-500/20 hover:bg-sky-500/30 text-sky-600 dark:text-sky-300 border border-sky-500/40 rounded-lg text-xs font-bold transition">
+        <button onclick="loadPresets(18)" class="px-2 py-1 bg-sky-500/20 hover:bg-sky-500/30 text-sky-600 dark:text-sky-300 border border-sky-500/40 rounded-lg text-[11px] font-bold transition">
           + Template 18 Tim
         </button>
-        <button onclick="loadPresets(8)" class="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-bold transition">
+        <button onclick="loadPresets(8)" class="px-2 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 rounded-lg text-[11px] font-bold transition">
           + Template 8 Tim
         </button>
-        <button onclick="clearTeamsInput()" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 rounded-lg text-xs font-semibold transition">
+        <button onclick="clearTeamsInput()" class="px-2 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 rounded-lg text-[11px] font-semibold transition">
           Kosongkan
         </button>
       </div>
 
-      <textarea id="teamInput" rows="7" class="w-full dark:bg-slate-950/80 bg-white border dark:border-white/10 border-slate-300 rounded-xl p-3 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[#FFD700] font-mono" placeholder="Ketik nama tim (satu tim per baris)..."></textarea>
+      <textarea id="teamInput" rows="6" class="w-full dark:bg-slate-950/80 bg-white border dark:border-white/10 border-slate-300 rounded-xl p-3 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[#FFD700] font-mono" placeholder="Ketik nama tim (satu tim per baris)..."></textarea>
       
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeModal()" class="px-3 py-1.5 dark:bg-white/5 bg-slate-200 text-xs font-semibold rounded-lg">Batal</button>
-        <button onclick="saveTeams()" class="px-3 py-1.5 bg-[#FFD700] text-slate-950 text-xs font-bold rounded-lg shadow-md">Simpan & Update Bagan</button>
+        <button onclick="closeModal()" class="px-3.5 py-1.5 dark:bg-white/5 bg-slate-200 text-xs font-semibold rounded-lg">Batal</button>
+        <button onclick="saveTeams()" class="px-3.5 py-1.5 bg-[#FFD700] text-slate-950 text-xs font-bold rounded-lg shadow-md">Simpan & Update Bagan</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: ADD NEW TOURNAMENT -->
-  <div id="addTourneyModal" class="fixed inset-0 dark:bg-slate-950/80 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="liquid-glass w-full max-w-md rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
-      <h3 class="font-bold text-base dark:text-white text-slate-900">Tambah Bagan Lomba Baru</h3>
+  <div id="addTourneyModal" class="fixed inset-0 dark:bg-slate-950/80 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-3 md:p-4 hidden">
+    <div class="liquid-glass w-full max-w-md rounded-2xl p-4 md:p-5 shadow-2xl flex flex-col gap-3 max-h-[90vh] overflow-y-auto touch-scroll">
+      <h3 class="font-bold text-sm md:text-base dark:text-white text-slate-900">Tambah Bagan Lomba Baru</h3>
       <input id="tourneyNameInput" type="text" class="w-full dark:bg-slate-950/80 bg-white border dark:border-white/10 border-slate-300 rounded-xl p-3 text-xs dark:text-slate-200 text-slate-800 focus:outline-none focus:border-[#FFD700]" placeholder="Nama Lomba (misal: Cerdas Cermat, Futsal, MLBB)" />
       
       <div>
@@ -370,8 +381,8 @@
       </div>
 
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeAddTourneyModal()" class="px-3 py-1.5 dark:bg-white/5 bg-slate-200 text-xs font-semibold rounded-lg">Batal</button>
-        <button onclick="createNewTourney()" class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg">Buat Bagan</button>
+        <button onclick="closeAddTourneyModal()" class="px-3.5 py-1.5 dark:bg-white/5 bg-slate-200 text-xs font-semibold rounded-lg">Batal</button>
+        <button onclick="createNewTourney()" class="px-3.5 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg">Buat Bagan</button>
       </div>
     </div>
   </div>
@@ -383,7 +394,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3h14a2 2 0 012 2v3a6 6 0 01-6 6H9a6 6 0 01-6-6V5a2 2 0 012-2z"/></svg>
       </div>
       <p class="text-[10px] font-black tracking-widest text-amber-600 dark:text-amber-400 uppercase">Terpilih Masuk Bagan</p>
-      <h3 id="winnerName" class="text-2xl font-black dark:text-white text-slate-900">-</h3>
+      <h3 id="winnerName" class="text-xl md:text-2xl font-black dark:text-white text-slate-900">-</h3>
       <p id="winnerSlotInfo" class="text-xs dark:text-slate-400 text-slate-500">Masuk ke Match</p>
       <button onclick="closeWinnerModal()" class="w-full py-2.5 bg-[#FFD700] text-slate-950 font-bold text-xs rounded-xl shadow-lg border border-amber-300">Lanjutkan Spin</button>
     </div>
@@ -396,7 +407,7 @@
         <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2l2.4 7.4h7.6l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4-6.2-4.5h7.6z"/></svg>
       </div>
       <p class="text-[10px] font-black tracking-widest text-amber-500 uppercase">JUARA TURNAMEN</p>
-      <h3 id="championName" class="text-3xl font-black text-amber-500 dark:text-amber-300 drop-shadow-md">-</h3>
+      <h3 id="championName" class="text-2xl md:text-3xl font-black text-amber-500 dark:text-amber-300 drop-shadow-md">-</h3>
       <p class="text-xs dark:text-slate-300 text-slate-600">Selamat atas kemenangannya!</p>
       <button onclick="closeChampionModal()" class="w-full mt-1 py-2.5 bg-[#FFD700] text-slate-950 font-black text-xs rounded-xl">Tutup</button>
     </div>
@@ -453,7 +464,13 @@
 
       saveToLocalStorage();
       applyTheme(currentTheme);
-      switchView('home');
+
+      // CHECK SHAREABLE LINK ON PAGE LOAD
+      checkUrlParamsOnLoad();
+
+      if (currentView === 'home' && !window.location.search.includes('data=')) {
+        switchView('home');
+      }
 
       window.addEventListener('keydown', (e) => {
         if (e.key === "Escape" && isFullView) toggleFullView();
@@ -463,6 +480,91 @@
         drawBracketConnectingLines();
       });
     };
+
+    function showToast(message) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.innerText = message;
+      toast.classList.remove('-translate-y-12', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-12', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+
+    // SHAREABLE LINK VIA BASE64 ENCODING
+    function shareViaLink() {
+      const t = getActiveTourney();
+      if (!t || !t.teams || t.teams.length === 0) {
+        alert("Isi daftar tim terlebih dahulu sebelum membagikan link.");
+        return;
+      }
+
+      try {
+        const payload = {
+          mode: currentView,
+          tourney: t
+        };
+        const jsonStr = JSON.stringify(payload);
+        const encoded = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+        
+        const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            showToast("Link bagan berhasil disalin ke clipboard!");
+          }).catch(() => {
+            promptCopyUrl(shareUrl);
+          });
+        } else {
+          promptCopyUrl(shareUrl);
+        }
+      } catch (err) {
+        alert("Gagal membuat link berbagi.");
+      }
+    }
+
+    function promptCopyUrl(url) {
+      window.prompt("Salin link bagan berikut untuk dibagikan:", url);
+    }
+
+    function checkUrlParamsOnLoad() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const encodedData = urlParams.get('data');
+
+      if (!encodedData) return;
+
+      try {
+        const jsonStr = decodeURIComponent(Array.prototype.map.call(atob(encodedData), c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        const payload = JSON.parse(jsonStr);
+
+        if (payload && payload.tourney && payload.tourney.name) {
+          const mode = payload.mode || 'direct';
+          const sharedTourney = payload.tourney;
+          
+          sharedTourney.id = 'tourney_shared_' + Date.now();
+
+          if (mode === 'direct') {
+            directTournaments.push(sharedTourney);
+            directActiveTourneyId = sharedTourney.id;
+          } else {
+            spinTournaments.push(sharedTourney);
+            spinActiveTourneyId = sharedTourney.id;
+          }
+
+          saveToLocalStorage();
+          switchView(mode);
+          showToast(`Bagan "${sharedTourney.name}" berhasil dimuat dari link!`);
+
+          const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+          window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+        }
+      } catch (e) {
+        console.error("Gagal memproses link berbagi:", e);
+      }
+    }
 
     function getActiveTournamentsList() {
       return (currentView === 'direct') ? directTournaments : spinTournaments;
@@ -530,15 +632,15 @@
 
         ['navHome', 'navSpin', 'navDirect'].forEach(id => {
           const btn = document.getElementById(id);
-          if (btn) btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 dark:text-slate-400 text-slate-600 hover:text-slate-900 dark:hover:text-white";
+          if (btn) btn.className = "px-2.5 py-1.5 md:px-3 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 dark:text-slate-400 text-slate-600 hover:text-slate-900 dark:hover:text-white";
         });
 
         if (viewName === 'spin') {
           wheelPanel.classList.remove('hidden');
-          document.getElementById('navSpin').className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-[#FFD700] text-slate-950 shadow-md";
+          document.getElementById('navSpin').className = "px-2.5 py-1.5 md:px-3.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 bg-[#FFD700] text-slate-950 shadow-md";
         } else {
           wheelPanel.classList.add('hidden');
-          document.getElementById('navDirect').className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-[#FFD700] text-slate-950 shadow-md";
+          document.getElementById('navDirect').className = "px-2.5 py-1.5 md:px-3.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 bg-[#FFD700] text-slate-950 shadow-md";
         }
 
         renderTabs();
@@ -618,7 +720,7 @@
           ? 'bg-[#FFD700] text-slate-950 border-amber-300 shadow-md font-extrabold' 
           : 'dark:bg-white/5 bg-white hover:bg-slate-200 dark:hover:bg-white/10 dark:text-slate-300 text-slate-700 dark:border-white/10 border-slate-300 font-medium';
 
-        tab.className = `px-3 py-1 rounded-lg border text-xs flex items-center gap-2 transition cursor-pointer shrink-0 ${activeStyle}`;
+        tab.className = `px-3 py-1 rounded-lg border text-xs flex items-center gap-1.5 transition cursor-pointer shrink-0 ${activeStyle}`;
         tab.innerHTML = `
           <span onclick="switchTab('${t.id}')">${t.name}</span>
           ${list.length > 1 ? `<button onclick="deleteTab(event, '${t.id}')" class="opacity-70 hover:opacity-100 font-bold ml-1 text-xs">&times;</button>` : ''}
@@ -675,7 +777,7 @@
 
     function loadActiveTourney() {
       const t = getActiveTourney();
-      document.getElementById('activeBracketTitle').innerText = `Bagan Lomba: ${t.name}`;
+      document.getElementById('activeBracketTitle').innerText = t.name;
       document.getElementById('totalTeamsCount').innerText = t.teams ? t.teams.length : 0;
       document.getElementById('formatBadgeInfo').innerText = `Format: ${t.teamsPerMatch || 2} Tim/Match`;
       
@@ -705,7 +807,7 @@
       if (t.remainingTeams) {
         t.remainingTeams.forEach(teamName => {
           const chip = document.createElement('span');
-          chip.className = 'px-1.5 py-0.5 dark:bg-white/10 bg-slate-200 border dark:border-white/10 border-slate-300 rounded backdrop-blur-md shadow-sm';
+          chip.className = 'px-1.5 py-0.5 dark:bg-white/10 bg-slate-200 border dark:border-white/10 border-slate-300 rounded backdrop-blur-md shadow-sm shrink-0';
           chip.innerText = teamName;
           listEl.appendChild(chip);
         });
@@ -741,9 +843,7 @@
       return null;
     }
 
-    // ENGINE PEMBAGIAN KIRI-KANAN ADAPTIF FORMAT TIM
     function getLeftRightSplit(total, kFmt = 2) {
-      // 1. SKEMA 2 TIM / MATCH (100% DIKUNCI & TIDAK BERUBAH)
       if (kFmt === 2) {
         if (total <= 3) return { NL: total, NR: 0 };
         
@@ -761,7 +861,6 @@
         return { NL, NR };
       }
 
-      // 2. SKEMA 3 TIM & 4 TIM / MATCH (MEMBAGI KELIPATAN MATCH UTOH)
       if (total <= kFmt) {
         return { NL: total, NR: 0 };
       }
@@ -777,7 +876,6 @@
       return { NL, NR };
     }
 
-    // ENGINE BAGAN UNIVERSAL
     function renderBracket() {
       const container = document.getElementById('bracketView');
       container.innerHTML = '';
@@ -785,11 +883,11 @@
 
       if (!t || !t.teams || t.teams.length === 0) {
         container.innerHTML = `
-          <div class="flex flex-col items-center justify-center h-full w-full py-16 text-center mx-auto">
-            <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 mb-3">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <div class="flex flex-col items-center justify-center h-full w-full py-12 text-center mx-auto">
+            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 mb-3">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
-            <h3 class="text-base md:text-lg font-black dark:text-white text-slate-800">Harap Isi Tim Yang Bertanding</h3>
+            <h3 class="text-base font-black dark:text-white text-slate-800">Harap Isi Tim Yang Bertanding</h3>
             <p class="text-xs dark:text-slate-400 text-slate-500 max-w-sm mt-1 mb-4">Daftar tim untuk lomba ini masih kosong. Klik tombol "Edit Tim" untuk memasukkan peserta.</p>
             <button onclick="openModal()" class="px-4 py-2 bg-[#FFD700] hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg border border-amber-300 transition active:scale-95">
               + Edit & Isi Tim Sekarang
@@ -801,7 +899,7 @@
       }
 
       renderUniversalBracket(container, t);
-      setTimeout(drawBracketConnectingLines, 50);
+      setTimeout(drawBracketConnectingLines, 60);
     }
 
     function renderUniversalBracket(container, t) {
@@ -817,7 +915,6 @@
       let leftTree = buildSideTree(leftTeams, 'L', NL, kFmt);
       let rightTree = buildSideTree(rightTeams, 'R', NR, kFmt);
 
-      // SISI KIRI
       leftTree.rounds.forEach((round) => {
         const col = createColumn(round.name);
         round.matches.forEach((m) => {
@@ -830,14 +927,12 @@
         container.appendChild(col.col);
       });
 
-      // FINAL TENGAH
       let leftFinalist = leftTree.finalWinner;
       let rightFinalist = rightTree.finalWinner;
       let finalists = [leftFinalist, rightFinalist].filter(Boolean);
       const colFinal = createCenterFinalColumn(finalists, getWinnerKey('FINAL'));
       container.appendChild(colFinal);
 
-      // SISI KANAN
       for (let r = rightTree.rounds.length - 1; r >= 0; r--) {
         let round = rightTree.rounds[r];
         const col = createColumn(round.name);
@@ -867,7 +962,6 @@
         let roundMatches = [];
         let nextSlots = [];
 
-        // ALUR PLAYOFF KHUSUS JIKA TERSISA 3 TIM DI FORMAT 1v1 (2 TIM/MATCH)
         if (currentSlots.length === 3 && kFormat === 2) {
           let mId0 = `card-${sidePrefix}${rIdx}-0`;
           let mId1 = `card-${sidePrefix}${rIdx}-1`;
@@ -880,9 +974,7 @@
           let loser0 = getLoserKey(mId0, p0, p1);
           let winner1 = getWinnerKey(mId1);
 
-          // Match 0 (Utama)
           roundMatches.push({ id: mId0, players: [p0, p1], winner: winner0, isSingle: false, isPlayoffUtama: true });
-          // Match 1 (Playoff: Kalah Match 0 vs Tim Pass)
           roundMatches.push({ id: mId1, players: [loser0 || 'Kalah Match Utama', p2], winner: winner1, isSingle: false, isPlayoffMatch: true });
 
           nextSlots = [winner0, winner1];
@@ -922,7 +1014,7 @@
 
     function createColumn(title) {
       const col = document.createElement('div');
-      col.className = 'flex-1 min-w-[130px] max-w-[160px] flex flex-col justify-around h-full gap-2 shrink-0';
+      col.className = 'flex-1 min-w-[125px] max-w-[155px] flex flex-col justify-around h-full gap-2 shrink-0';
 
       const header = document.createElement('h3');
       header.className = 'text-center text-[9px] font-black uppercase tracking-wider dark:text-amber-300 text-amber-700 py-1 dark:bg-white/5 bg-amber-500/10 rounded dark:border-white/10 border-amber-500/20 mb-1 shrink-0 truncate backdrop-blur-md shadow-sm px-1';
@@ -975,7 +1067,7 @@
 
     function createCenterFinalColumn(players, winner) {
       const col = document.createElement('div');
-      col.className = 'flex-1 min-w-[130px] max-w-[160px] flex flex-col items-center justify-center h-full gap-2 z-20 shrink-0';
+      col.className = 'flex-1 min-w-[125px] max-w-[155px] flex flex-col items-center justify-center h-full gap-2 z-20 shrink-0';
 
       const title = document.createElement('div');
       title.className = 'text-[9px] font-black tracking-widest text-amber-500 uppercase flex items-center gap-1';
@@ -1017,12 +1109,11 @@
         btn.disabled = true;
       }
 
-      btn.className = `w-full px-2 py-1 rounded-lg text-[9px] md:text-[10px] font-semibold flex justify-between items-center border transition ${style}`;
+      btn.className = `w-full px-2 py-1.5 md:py-1 rounded-lg text-[9px] md:text-[10px] font-semibold flex justify-between items-center border transition ${style}`;
       btn.innerHTML = `<span class="truncate">${label}</span> <span>${badge}</span>`;
       return btn;
     }
 
-    // ENGINE GARIS BRACKET UNIVERSAL PRESISI
     function drawBracketConnectingLines() {
       const svg = document.getElementById('bracketSvgOverlay');
       if (!svg) return;
@@ -1071,7 +1162,6 @@
             let playoffUtama = matches.find(m => m.hasAttribute('data-playoff-utama'));
             let playoffMatch = matches.find(m => m.hasAttribute('data-playoff-match'));
 
-            // KASUS A: Babak yang memiliki Playoff 3-Tim (khusus 1v1)
             if (playoffUtama && playoffMatch) {
               let targetNext = nextMatches[0];
               let pU = getPoint(playoffUtama.id, edgeFrom);
@@ -1090,7 +1180,6 @@
                 drawLine(`M ${pU_slot.x} ${pU_slot.y} V ${pP_slot.y}`);
               }
             }
-            // KASUS B: Babak 3-Match yang mengumpan ke Playoff 3-Tim
             else if (matches.length === 3 && nextMatches.length === 2 && nextMatches[0].hasAttribute('data-playoff-utama')) {
               let m0 = matches[0];
               let m1 = matches[1];
@@ -1116,7 +1205,6 @@
                 drawLine(`M ${p2.x} ${p2.y} H ${midX} V ${pT_playoff.y} H ${pT_playoff.x}`);
               }
             }
-            // KASUS C: Knockout / Multi-Tim Standar (Segala Format 2, 3, & 4 Tim)
             else {
               let kFmt = t.teamsPerMatch || 2;
               for (let i = 0; i < matches.length; i += kFmt) {
@@ -1136,24 +1224,19 @@
                   let pBot = getPoint(pair[pair.length - 1].id, edgeFrom);
                   if (pTop && pBot && pTarget) {
                     let midX = (pTop.x + pTarget.x) / 2;
-                    
-                    // Garis vertikal utama penghubung grup
                     drawLine(`M ${midX} ${pTop.y} V ${pBot.y}`);
 
-                    // Hubungkan SELURUH match dalam grup (termasuk match tengah) ke garis vertikal
                     pair.forEach(m => {
                       let pM = getPoint(m.id, edgeFrom);
                       if (pM) drawLine(`M ${pM.x} ${pM.y} H ${midX}`);
                     });
 
-                    // Garis horizontal menuju match berikutnya
                     drawLine(`M ${midX} ${pTarget.y} H ${pTarget.x}`);
                   }
                 }
               }
             }
           }
-          // SEBELUM FINAL TENGAH
           else {
             let playoffUtama = matches.find(m => m.hasAttribute('data-playoff-utama'));
             let playoffMatch = matches.find(m => m.hasAttribute('data-playoff-match'));
@@ -1197,21 +1280,21 @@
       const t = getActiveTourney();
       const numOptions = (t.remainingTeams) ? t.remainingTeams.length : 0;
       const arcSize = (2 * Math.PI) / (numOptions || 1);
-      const outsideRadius = 105;
-      const textRadius = 72;
-      const insideRadius = 22;
+      const outsideRadius = 95;
+      const textRadius = 65;
+      const insideRadius = 20;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (numOptions === 0) {
         ctx.fillStyle = (currentTheme === 'dark') ? "#1e293b" : "#e2e8f0";
         ctx.beginPath();
-        ctx.arc(120, 120, outsideRadius, 0, 2 * Math.PI);
+        ctx.arc(110, 110, outsideRadius, 0, 2 * Math.PI);
         ctx.fill();
         ctx.fillStyle = (currentTheme === 'dark') ? "#94a3b8" : "#64748b";
         ctx.font = "bold 11px Plus Jakarta Sans";
         ctx.textAlign = "center";
-        ctx.fillText(t.teams && t.teams.length > 0 ? "Semua Selesai!" : "Belum Ada Tim", 120, 124);
+        ctx.fillText(t.teams && t.teams.length > 0 ? "Semua Selesai!" : "Belum Ada Tim", 110, 114);
         return;
       }
 
@@ -1220,8 +1303,8 @@
         ctx.fillStyle = colors[i % colors.length];
 
         ctx.beginPath();
-        ctx.arc(120, 120, outsideRadius, angle, angle + arcSize, false);
-        ctx.arc(120, 120, insideRadius, angle + arcSize, angle, true);
+        ctx.arc(110, 110, outsideRadius, angle, angle + arcSize, false);
+        ctx.arc(110, 110, insideRadius, angle + arcSize, angle, true);
         ctx.fill();
         ctx.strokeStyle = (currentTheme === 'dark') ? "#090d16" : "#ffffff";
         ctx.lineWidth = 2;
@@ -1230,7 +1313,7 @@
         ctx.save();
         ctx.fillStyle = (i % colors.length === 0) ? "#0f172a" : "#ffffff";
         ctx.font = "bold 9px Plus Jakarta Sans";
-        ctx.translate(120 + Math.cos(angle + arcSize / 2) * textRadius, 120 + Math.sin(angle + arcSize / 2) * textRadius);
+        ctx.translate(110 + Math.cos(angle + arcSize / 2) * textRadius, 110 + Math.sin(angle + arcSize / 2) * textRadius);
         ctx.rotate(angle + arcSize / 2 + Math.PI / 2);
         const text = t.remainingTeams[i];
         ctx.fillText(text.length > 10 ? text.substring(0, 8) + ".." : text, -ctx.measureText(text).width / 2, 0);
@@ -1238,7 +1321,7 @@
       }
 
       ctx.beginPath();
-      ctx.arc(120, 120, insideRadius, 0, 2 * Math.PI);
+      ctx.arc(110, 110, insideRadius, 0, 2 * Math.PI);
       ctx.fillStyle = (currentTheme === 'dark') ? "#0f172a" : "#ffffff";
       ctx.fill();
       ctx.strokeStyle = "#FFD700";
@@ -1325,9 +1408,9 @@
       [2, 3, 4].forEach(v => {
         const btn = document.getElementById('btnFmt' + v);
         if (v === val) {
-          btn.className = "px-3 py-1.5 rounded-xl border text-xs font-extrabold transition text-center border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-300";
+          btn.className = "px-2.5 py-1.5 rounded-xl border text-xs font-extrabold transition text-center border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-300";
         } else {
-          btn.className = "px-3 py-1.5 rounded-xl border text-xs font-semibold transition text-center border-slate-300 dark:border-white/10 dark:text-slate-400 text-slate-600";
+          btn.className = "px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition text-center border-slate-300 dark:border-white/10 dark:text-slate-400 text-slate-600";
         }
       });
     }
